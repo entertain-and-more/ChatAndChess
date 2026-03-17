@@ -4,40 +4,7 @@ Play chess against your personal AI -- or with a friend. Text-based terminal gam
 
 ## Screenshot
 
-```
-  ============================================
-     CHAT AND CHESS  |  Terminal Edition
-  ============================================
-
-    [1]  2 Spieler (lokal)
-    [2]  Spieler vs Bot (Minimax)
-    [3]  Spieler vs Claude (API)
-    [4]  Spieler vs Claude Code (Datei-Link)
-
-  Auswahl: 2
-
-  [vs Bot (Tiefe 3)]
-  +--+--+--+--+--+--+--+--+
- 8 | r|  | b| q|  | r| k|  |
-  +--+--+--+--+--+--+--+--+
- 7 | p| p| p|  |  | p| p| p|
-  +--+--+--+--+--+--+--+--+
- 6 |  |  | n|  |  | n|  |  |
-  +--+--+--+--+--+--+--+--+
- 5 |  |  |  | p| p|  |  |  |
-  +--+--+--+--+--+--+--+--+
- 4 |  |  | B|  | P|  |  |  |
-  +--+--+--+--+--+--+--+--+
- 3 |  |  |  |  |  | N|  |  |
-  +--+--+--+--+--+--+--+--+
- 2 | P| P| P| P|  | P| P| P|
-  +--+--+--+--+--+--+--+--+
- 1 | R| N| B| Q| K|  |  | R|
-  +--+--+--+--+--+--+--+--+
-    a  b  c  d  e  f  g  h
-
-  Weiss ist dran. Zug (z.B. e2e4): _
-```
+![ChatAndChess Gameplay](screenshots/gameplay.jpg)
 
 ## Features
 
