@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+AUFGABEN.txt
+CLAUDE_PROMPT.txt
+chess_settings.json
