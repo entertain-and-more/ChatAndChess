@@ -1,0 +1,32 @@
+AUFGABEN - ChatAndChess
+========================
+Stand: 17.03.2026
+
+## BUGFIXES (Session 2026-03-13, Claude Opus)
+[x] KRITISCH: find_king() None-Crash in in_check() -- Guard mit None-Check
+    - Fix: None-Check vor Zugriff auf Koerdinaten eingefuegt; in_check() gibt False zurueck wenn King nicht gefunden
+[x] KRITISCH: Race Condition bei Response-File JSON-Lesen -- Max 3 Retries statt Endlos-Loop
+    - Fix: Endlos-Loop durch retry-Schleife (max. 3 Versuche) mit sleep(0.1) ersetzt; verhindert Deadlock
+[x] HOCH: open() ohne encoding beim API-Key-Lesen -- encoding="utf-8"
+    - Fix: encoding="utf-8" zu allen open()-Aufrufen fuer API-Key-Dateien ergaenzt (Windows cp1252 Fix)
+[x] HOCH: TOCTOU-Race in chess_analyze.py -- try/except statt exists()+open()
+    - Fix: exists()+open() Muster durch atomares try/except FileNotFoundError ersetzt
+
+## SONSTIGES
+
+[x] Q78: Docstrings in chess.py und chess_analyze.py auf Englisch uebersetzt -- DONE 2026-03-14
+    - chess.py: 10 Docstrings (Modul + 9 Funktionen)
+    - chess_analyze.py: 10 Docstrings (Modul + 9 Funktionen)
+
+## FEATURE-REQUESTS
+
+[ ] Online-Multiplayer: Ueber Server spielen ermoeglichen?
+    - WebSocket-basiert oder REST-API mit Polling?
+    - Lobby-System / Matchmaking oder direkter Link?
+    - Hosting auf ellmos-services (Hetzner CCX13) moeglich?
+    - Technologie: Flask/FastAPI + WebSocket oder Node.js?
+    - Frage: Lohnt sich der Aufwand fuer ein Terminal-Spiel,
+      oder erst bei GUI-Version sinnvoll?
+
+## OFFENE BUGS
+(keine bekannten)
