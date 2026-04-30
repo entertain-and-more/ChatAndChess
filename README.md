@@ -27,7 +27,12 @@ Play chess against your personal AI -- or with a friend. Text-based terminal gam
 
 - Python 3.10+
 - No external dependencies for base game
-- Optional: `anthropic` package for Claude API mode (`pip install anthropic`)
+- Optional: `anthropic` package for Claude API mode
+
+```bash
+# Optional Claude API mode dependency
+pip install -r requirements.txt
+```
 
 ## Quick Start
 
@@ -66,19 +71,42 @@ python chess_analyze.py e2e4 e7e5 g1f3
 python chess_analyze.py --top 8
 ```
 
+## Datenschutz / Privacy
+
+ChatAndChess keeps local runtime files out of Git. API keys belong in the
+`ANTHROPIC_API_KEY` environment variable or a local home-directory key file,
+never in this repository.
+
+The following local files are ignored:
+
+- `.env`, `.env.*`, `.anthropic_key`, credential and token files
+- `chess_settings.json`
+- `CLAUDE_PROMPT.txt`
+- `chess_comm/`
+- build outputs such as `build/`, `dist/`, `*.exe`, `*.msi`, and `*.msix`
+
 ## Project Structure
 
 ```
 chess.py              Main game (all modes, engine, rules)
 chess_analyze.py      Tactics analyzer (position evaluation, candidate moves)
 START_CHESS.bat       Windows launcher
-chess_comm/           Communication directory for Claude Code mode
-chess_settings.json   Game settings (hint mode, depth, etc.)
+build_exe.bat         Optional PyInstaller build helper for Windows
+requirements.txt      Base/optional dependency notes
+chess_comm/           Runtime communication directory (gitignored)
+chess_settings.json   Local game settings (gitignored)
 ```
 
 ## License
 
-MIT
+[MIT](LICENSE)
+
+## Community Docs
+
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
 ---
 
@@ -90,7 +118,7 @@ ChatAndChess is a terminal-based chess game written in Python. Play against a fr
 
 ## Haftung / Liability
 
-Dieses Projekt ist eine **unentgeltliche Open-Source-Schenkung** im Sinne der §§ 516 ff. BGB. Die Haftung des Urhebers ist gemäß **§ 521 BGB** auf **Vorsatz und grobe Fahrlässigkeit** beschränkt. Ergänzend gelten die Haftungsausschlüsse aus GPL-3.0 / MIT / Apache-2.0 §§ 15–16 (je nach gewählter Lizenz).
+Dieses Projekt ist eine **unentgeltliche Open-Source-Schenkung** im Sinne der §§ 516 ff. BGB. Die Haftung des Urhebers ist gemäß **§ 521 BGB** auf **Vorsatz und grobe Fahrlässigkeit** beschränkt. Ergänzend gelten die Haftungsausschlüsse aus MIT.
 
 Nutzung auf eigenes Risiko. Keine Wartungszusage, keine Verfügbarkeitsgarantie, keine Gewähr für Fehlerfreiheit oder Eignung für einen bestimmten Zweck.
 
