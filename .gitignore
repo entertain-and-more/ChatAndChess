@@ -15,6 +15,14 @@ token.json
 *.log
 *.tmp
 *.bak
+*.db
+*.sqlite
+*.sqlite3
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
 Thumbs.db
 desktop.ini
 .vscode/

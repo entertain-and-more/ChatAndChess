@@ -1,91 +1,97 @@
 # ChatAndChess
 
-Play chess against your personal AI -- or with a friend. Text-based terminal game with multiple opponent modes.
+Terminal-Schach für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Integration.
+Terminal chess for local games, a Minimax bot, Claude API mode, and Claude Code integration.
 
 ## Screenshot
 
-![ChatAndChess Gameplay](screenshots/gameplay.jpg)
+![ChatAndChess Gameplay](README/screenshots/gameplay.jpg)
 
-## Features
+## Funktionen / Features
 
-- **4 Game Modes:**
-  - **2 Player** -- Local hotseat, play with a friend on the same machine
-  - **vs Bot** -- Minimax engine with configurable search depth (1-5)
-  - **vs Claude API** -- Play against Claude AI via Anthropic API
-  - **vs Claude Code** -- File-based communication for Claude Code integration
-- **Full chess rules** -- Castling, en passant, pawn promotion, check/checkmate/stalemate detection
-- **Piece-square tables** -- Positional evaluation for smarter bot play
-- **Alpha-beta pruning** -- Efficient search with move ordering
-- **Tactics Analyzer** -- Standalone tool for position analysis and move evaluation
-- **Configurable hint modes:**
-  - Gleichzug-Modus (both players see engine hints)
-  - Engine-Modus (only AI sees hints)
-  - Training-Modus (only human sees hints)
-  - Mensch-Modus (no hints for anyone)
+- **4 Spielmodi / 4 game modes**
+  - **2 Player**: lokales Hotseat-Spiel auf einem Rechner
+  - **vs Bot**: Minimax-Engine mit einstellbarer Suchtiefe (1-5)
+  - **vs Claude API**: optionales Spiel gegen Claude über die Anthropic API
+  - **vs Claude Code**: dateibasierte Worker-Kommunikation für Claude Code
+- **Vollständige Schachregeln / Full chess rules**
+  - Rochade, en passant, Bauernumwandlung, Schach, Matt und Patt
+- **Engine-Hilfen / Engine hints**
+  - Gleichzug-Modus: beide Seiten sehen Engine-Hinweise
+  - Engine-Modus: nur die KI sieht Hinweise
+  - Training-Modus: nur der Mensch sieht Hinweise
+  - Mensch-Modus: keine Hinweise
+- **Analyse / Analysis**
+  - Piece-square tables, Alpha-Beta-Pruning und eigenständiger Taktik-Analyzer
 
-## Requirements
+## Voraussetzungen / Requirements
 
 - Python 3.10+
-- No external dependencies for base game
-- Optional: `anthropic` package for Claude API mode
+- Keine externen Abhängigkeiten für das Basisspiel
+- Optional: Paket `anthropic` für den Claude-API-Modus
 
 ```bash
-# Optional Claude API mode dependency
 pip install -r requirements.txt
 ```
 
-## Quick Start
+## Start / Quick Start
 
 ```bash
-# Start the game
+# Spiel starten / start game
 python chess.py
 
-# Or use the launcher (Windows)
+# Windows-Starter
 START_CHESS.bat
 
-# Start in worker mode (for Claude Code integration)
+# Worker-Modus für Claude Code
 python chess.py --worker
 ```
 
-## How to Play
+## Spielweise / How to Play
 
-Enter moves in UCI notation: `e2e4` (from-square to-square).
+Züge werden in UCI-Notation eingegeben: `e2e4` (Startfeld zu Zielfeld).
+Moves use UCI notation: `e2e4` (from-square to-square).
 
-Special commands during play:
-- Type a move like `e2e4`, `g1f3`, `e1g1` (castling)
-- Pawn promotion: move to last rank and you will be prompted
+- Normale Züge: `e2e4`, `g1f3`
+- Rochade: `e1g1` oder `e1c1`
+- Bauernumwandlung: Beim Erreichen der letzten Reihe fragt das Programm nach der Figur.
 
-## Tactics Analyzer
+## Taktik-Analyzer / Tactics Analyzer
 
 ```bash
-# Analyze current position
+# Aktuelle Position analysieren
 python chess_analyze.py
 
-# Analyze with custom depth
+# Eigene Suchtiefe
 python chess_analyze.py --depth 4
 
-# Analyze a sequence of moves
+# Zugfolge analysieren
 python chess_analyze.py e2e4 e7e5 g1f3
 
-# Show more candidate moves
+# Mehr Kandidatenzüge anzeigen
 python chess_analyze.py --top 8
 ```
 
 ## Datenschutz / Privacy
 
-ChatAndChess keeps local runtime files out of Git. API keys belong in the
-`ANTHROPIC_API_KEY` environment variable or a local home-directory key file,
-never in this repository.
+ChatAndChess speichert Spiel- und Worker-Laufzeitdaten lokal. API-Schlüssel gehören in die
+Umgebungsvariable `ANTHROPIC_API_KEY` oder in eine lokale Home-Datei, aber nicht in dieses
+Repository.
 
-The following local files are ignored:
+ChatAndChess keeps runtime data local. API keys belong in the `ANTHROPIC_API_KEY`
+environment variable or a local home-directory key file, never in this repository.
+
+Diese lokalen Dateien werden ignoriert / ignored local files:
 
 - `.env`, `.env.*`, `.anthropic_key`, credential and token files
 - `chess_settings.json`
 - `CLAUDE_PROMPT.txt`
 - `chess_comm/`
+- `AUFGABEN.txt`, `TEST.txt`, `TESTS.txt`, `TESTERGEBNISSE.txt`
 - build outputs such as `build/`, `dist/`, `*.exe`, `*.msi`, and `*.msix`
+- local database/cache outputs such as `*.db`, `*.sqlite*`, `.pytest_cache/`, and `htmlcov/`
 
-## Project Structure
+## Projektstruktur / Project Structure
 
 ```
 chess.py              Main game (all modes, engine, rules)
@@ -93,6 +99,7 @@ chess_analyze.py      Tactics analyzer (position evaluation, candidate moves)
 START_CHESS.bat       Windows launcher
 build_exe.bat         Optional PyInstaller build helper for Windows
 requirements.txt      Base/optional dependency notes
+README/screenshots/   Repository screenshots used by the README
 chess_comm/           Runtime communication directory (gitignored)
 chess_settings.json   Local game settings (gitignored)
 ```
