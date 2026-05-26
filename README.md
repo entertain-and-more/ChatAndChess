@@ -14,6 +14,7 @@ Terminal chess for local games, a Minimax bot, Claude API mode, and Claude Code 
   - **vs Bot**: Minimax-Engine mit einstellbarer Suchtiefe (1-5)
   - **vs Claude API**: optionales Spiel gegen Claude über die Anthropic API
   - **vs Claude Code**: dateibasierte Worker-Kommunikation für Claude Code
+    inklusive stabiler Rochade- und En-passant-Zustände im Worker-JSON
 - **Vollständige Schachregeln / Full chess rules**
   - Rochade, en passant, Bauernumwandlung, Schach, Matt und Patt
 - **Engine-Hilfen / Engine hints**
