@@ -263,6 +263,11 @@ def same_color(p1, p2):
     return (is_white(p1) and is_white(p2)) or (p1.islower() and p2.islower())
 
 
+def can_capture_target(piece, target):
+    """Kings are never a legal capture target in chess."""
+    return target != "." and target.upper() != "K" and not same_color(piece, target)
+
+
 def pos_to_str(row, col):
     return chr(ord("a") + col) + str(8 - row)
 
@@ -342,7 +347,7 @@ def get_raw_moves(board, r, c, en_passant_target=None, castling_rights=None):
             nc = c + dc
             if in_bounds(nr, nc):
                 target = board[nr][nc]
-                if target != "." and not same_color(piece, target):
+                if can_capture_target(piece, target):
                     moves.append((nr, nc))
                 if en_passant_target and (nr, nc) == en_passant_target:
                     moves.append((nr, nc))
@@ -353,7 +358,7 @@ def get_raw_moves(board, r, c, en_passant_target=None, castling_rights=None):
             nr, nc = r + dr, c + dc
             if in_bounds(nr, nc):
                 target = board[nr][nc]
-                if target == "." or not same_color(piece, target):
+                if target == "." or can_capture_target(piece, target):
                     moves.append((nr, nc))
 
     elif p == "B":
@@ -363,7 +368,7 @@ def get_raw_moves(board, r, c, en_passant_target=None, castling_rights=None):
                 target = board[nr][nc]
                 if target == ".":
                     moves.append((nr, nc))
-                elif not same_color(piece, target):
+                elif can_capture_target(piece, target):
                     moves.append((nr, nc))
                     break
                 else:
@@ -378,7 +383,7 @@ def get_raw_moves(board, r, c, en_passant_target=None, castling_rights=None):
                 target = board[nr][nc]
                 if target == ".":
                     moves.append((nr, nc))
-                elif not same_color(piece, target):
+                elif can_capture_target(piece, target):
                     moves.append((nr, nc))
                     break
                 else:
@@ -394,7 +399,7 @@ def get_raw_moves(board, r, c, en_passant_target=None, castling_rights=None):
                 target = board[nr][nc]
                 if target == ".":
                     moves.append((nr, nc))
-                elif not same_color(piece, target):
+                elif can_capture_target(piece, target):
                     moves.append((nr, nc))
                     break
                 else:
@@ -408,7 +413,7 @@ def get_raw_moves(board, r, c, en_passant_target=None, castling_rights=None):
             nr, nc = r + dr, c + dc
             if in_bounds(nr, nc):
                 target = board[nr][nc]
-                if target == "." or not same_color(piece, target):
+                if target == "." or can_capture_target(piece, target):
                     moves.append((nr, nc))
         if castling_rights:
             back_row = 7 if white else 0
@@ -901,19 +906,16 @@ def write_request(board, white, legal_moves, move_history, check,
                   en_passant_target=None, castling_rights=None):
     """Write a move request for Claude Code."""
     settings = load_settings()
-    legal_strs = ["{}{}".format(pos_to_str(fr, fc), pos_to_str(tr, tc))
-                  for fr, fc, tr, tc in legal_moves]
-    data = {
-        "board": board,
-        "board_text": board_to_text(board),
-        "white_turn": white,
-        "color": "Weiss" if white else "Schwarz",
-        "legal_moves": legal_strs,
-        "move_history": move_history,
-        "check": check,
-        "timestamp": time.time(),
-        "settings": settings,
-    }
+    data = build_worker_request_data(
+        board,
+        white,
+        legal_moves,
+        move_history,
+        check,
+        en_passant_target=en_passant_target,
+        castling_rights=castling_rights,
+    )
+    data["settings"] = settings
     if settings.get("claude_uses_engine") and castling_rights is not None:
         cr = castling_rights if isinstance(castling_rights, set) else set(castling_rights)
         hints = compute_hints(board, white, en_passant_target, cr,
@@ -933,6 +935,106 @@ def write_request(board, white, legal_moves, move_history, check,
             data["recommendation"] = hints[0][1]
     with open(REQUEST_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def build_worker_request_data(board, white, legal_moves, move_history, check,
+                              en_passant_target=None, castling_rights=None):
+    """Build the JSON payload for the Claude-Code worker."""
+    legal_strs = ["{}{}".format(pos_to_str(fr, fc), pos_to_str(tr, tc))
+                  for fr, fc, tr, tc in legal_moves]
+    data = {
+        "board": board,
+        "board_text": board_to_text(board),
+        "white_turn": white,
+        "color": "Weiss" if white else "Schwarz",
+        "legal_moves": legal_strs,
+        "move_history": move_history,
+        "check": check,
+        "timestamp": time.time(),
+    }
+    if en_passant_target is not None:
+        data["en_passant_target"] = list(en_passant_target)
+    if castling_rights is not None:
+        cr = castling_rights if isinstance(castling_rights, set) else set(castling_rights)
+        data["castling_rights"] = sorted(cr)
+    return data
+
+
+def infer_castling_rights_from_board(board):
+    """Fallback for older requests that do not carry explicit castling rights."""
+    castling_rights = {"K", "Q", "k", "q"}
+
+    if board[7][4] != "K":
+        castling_rights.discard("K")
+        castling_rights.discard("Q")
+    if board[0][4] != "k":
+        castling_rights.discard("k")
+        castling_rights.discard("q")
+    if board[7][7] != "R":
+        castling_rights.discard("K")
+    if board[7][0] != "R":
+        castling_rights.discard("Q")
+    if board[0][7] != "r":
+        castling_rights.discard("k")
+    if board[0][0] != "r":
+        castling_rights.discard("q")
+
+    return castling_rights
+
+
+def infer_en_passant_target_from_history(board, history):
+    """Fallback for older requests that do not carry explicit en-passant state."""
+    en_passant_target = None
+    if history:
+        last = history[-1]
+        if len(last) >= 4:
+            ls = parse_pos(last[:2])
+            ld = parse_pos(last[2:4])
+            if ls and ld:
+                lfr, lfc = ls
+                ltr, ltc = ld
+                if board[ltr][ltc].upper() == "P" and abs(lfr - ltr) == 2:
+                    en_passant_target = ((lfr + ltr) // 2, lfc)
+    return en_passant_target
+
+
+def load_worker_state(data):
+    """Parse a Claude-Code request payload into typed worker state."""
+    board = data["board"]
+    white = data["white_turn"]
+    legal_strs = data["legal_moves"]
+    check = data.get("check", False)
+    history = data.get("move_history", [])
+
+    legal_moves = []
+    for ms in legal_strs:
+        if len(ms) >= 4:
+            src = parse_pos(ms[:2])
+            dst = parse_pos(ms[2:4])
+            if src and dst:
+                legal_moves.append((src[0], src[1], dst[0], dst[1]))
+
+    castling_raw = data.get("castling_rights")
+    if castling_raw is not None:
+        castling_rights = set(castling_raw)
+    else:
+        castling_rights = infer_castling_rights_from_board(board)
+
+    en_passant_raw = data.get("en_passant_target")
+    if en_passant_raw is not None:
+        en_passant_target = tuple(en_passant_raw)
+    else:
+        en_passant_target = infer_en_passant_target_from_history(board, history)
+
+    return {
+        "board": board,
+        "white_turn": white,
+        "legal_moves": legal_moves,
+        "check": check,
+        "move_history": history,
+        "castling_rights": castling_rights,
+        "en_passant_target": en_passant_target,
+    }
 
 
 def wait_for_response(timeout=300):
@@ -1024,57 +1126,20 @@ def run_worker():
                 with open(REQUEST_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
-                board = data["board"]
-                white = data["white_turn"]
-                legal_strs = data["legal_moves"]
-                check = data.get("check", False)
-                history = data.get("move_history", [])
-
-                # Legal moves parsen
-                legal_moves = []
-                for ms in legal_strs:
-                    if len(ms) >= 4:
-                        src = parse_pos(ms[:2])
-                        dst = parse_pos(ms[2:4])
-                        if src and dst:
-                            legal_moves.append((src[0], src[1], dst[0], dst[1]))
+                state = load_worker_state(data)
+                board = state["board"]
+                white = state["white_turn"]
+                legal_moves = state["legal_moves"]
+                check = state["check"]
+                history = state["move_history"]
+                castling_rights = state["castling_rights"]
+                en_passant_target = state["en_passant_target"]
 
                 if not legal_moves:
                     print("[Worker] Keine legalen Zuege!")
                     continue
 
                 # Bot-Engine fuer Zugwahl nutzen
-                castling_rights = {"K", "Q", "k", "q"}
-                en_passant_target = None
-
-                # Rochaderechte aus Brettstellung ableiten
-                if board[7][4] != "K":
-                    castling_rights.discard("K")
-                    castling_rights.discard("Q")
-                if board[0][4] != "k":
-                    castling_rights.discard("k")
-                    castling_rights.discard("q")
-                if board[7][7] != "R":
-                    castling_rights.discard("K")
-                if board[7][0] != "R":
-                    castling_rights.discard("Q")
-                if board[0][7] != "r":
-                    castling_rights.discard("k")
-                if board[0][0] != "r":
-                    castling_rights.discard("q")
-
-                # En passant aus letztem Zug ableiten
-                if history:
-                    last = history[-1]
-                    if len(last) >= 4:
-                        ls = parse_pos(last[:2])
-                        ld = parse_pos(last[2:4])
-                        if ls and ld:
-                            lfr, lfc = ls
-                            ltr, ltc = ld
-                            if board[ltr][ltc].upper() == "P" and abs(lfr - ltr) == 2:
-                                en_passant_target = ((lfr + ltr) // 2, lfc)
-
                 print("[Worker] Berechne Zug fuer {}...".format(
                     "Weiss" if white else "Schwarz"))
 
