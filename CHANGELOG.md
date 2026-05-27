@@ -4,6 +4,7 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added `PORTIERUNGSPLAN.md` and `EXPORTFORMAT.md` to document the desktop-only platform strategy and future file-based game exchange.
 - Moved the gameplay screenshot into `README/screenshots/` to match the repository documentation policy.
 - Expanded the README with clearer German/English setup, usage, privacy, and project-structure notes.
 - Extended `.gitignore` for local database files and common Python test/cache outputs.
