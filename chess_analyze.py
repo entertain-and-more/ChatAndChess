@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from chess import (
     make_move, get_legal_moves, evaluate_board, minimax,
     in_check, is_white, update_castling_rights, order_moves,
-    PIECE_VALUES, INITIAL_BOARD
+    PIECE_VALUES, INITIAL_BOARD, PROMOTION_CHOICES
 )
 
 COMM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chess_comm")
@@ -39,20 +39,28 @@ PIECE_NAMES = {
 # -----------------------------------------------------------------------
 
 def uci_to_coords(uci):
-    """Convert a UCI move (e.g. 'e4e3') to (from_row, from_col, to_row, to_col)."""
-    if len(uci) < 4:
+    """Convert UCI text to coordinates plus an optional promotion suffix."""
+    if len(uci) not in (4, 5):
         return None
     fc = ord(uci[0].lower()) - ord('a')
     fr = 8 - int(uci[1])
     tc = ord(uci[2].lower()) - ord('a')
     tr = 8 - int(uci[3])
+    promo = None
+    if len(uci) == 5:
+        promo = uci[4].lower()
+        if promo not in PROMOTION_CHOICES:
+            return None
     if all(0 <= x <= 7 for x in [fr, fc, tr, tc]):
-        return (fr, fc, tr, tc)
+        return (fr, fc, tr, tc, promo)
     return None
 
 
-def coords_to_uci(fr, fc, tr, tc):
-    return chr(ord('a') + fc) + str(8 - fr) + chr(ord('a') + tc) + str(8 - tr)
+def coords_to_uci(fr, fc, tr, tc, promo=None):
+    move = chr(ord('a') + fc) + str(8 - fr) + chr(ord('a') + tc) + str(8 - tr)
+    if promo:
+        move += promo.lower()
+    return move
 
 
 def apply_uci(board, uci, ep_target, castling_rights):
@@ -60,7 +68,7 @@ def apply_uci(board, uci, ep_target, castling_rights):
     coords = uci_to_coords(uci)
     if not coords:
         return None, ep_target, castling_rights
-    fr, fc, tr, tc = coords
+    fr, fc, tr, tc, promo = coords
     piece = board[fr][fc]
     new_ep = None
     if piece and piece.upper() == "P" and abs(fr - tr) == 2:
@@ -68,7 +76,7 @@ def apply_uci(board, uci, ep_target, castling_rights):
     new_cr = set(castling_rights)
     if piece:
         update_castling_rights(new_cr, piece, fr, fc, tr, tc)
-    new_board = make_move(board, fr, fc, tr, tc, ep_target)
+    new_board = make_move(board, fr, fc, tr, tc, ep_target, promo)
     return new_board, new_ep, new_cr
 
 
@@ -129,7 +137,7 @@ def draw_board(board, highlight_moves=None, last_move=None):
     if last_move:
         coords = uci_to_coords(last_move)
         if coords:
-            fr, fc, tr, tc = coords
+            fr, fc, tr, tc, _ = coords
             LM = {(fr, fc), (tr, tc)}
 
     print("  +--+--+--+--+--+--+--+--+")
@@ -299,7 +307,7 @@ def main():
             if not coords:
                 print("  Ungueltiger Zug: {}".format(uci))
                 continue
-            fr, fc, tr, tc = coords
+            fr, fc, tr, tc, _ = coords
             piece = sim_board[fr][fc]
             if piece == ".":
                 print("  Kein Stein auf {}: {}".format(uci[:2], uci))

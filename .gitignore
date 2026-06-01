@@ -1,4 +1,4 @@
-__pycache__/
+﻿__pycache__/
 *.pyc
 *.pyo
 .venv/
@@ -37,3 +37,8 @@ chess_comm/
 AUFGABEN.txt
 CLAUDE_PROMPT.txt
 chess_settings.json
+# ---- Interne Steuerungsdateien ----
+DECISIONS.md
+PORTIERUNGSPLAN.md
+TODO.md
+DONE.md

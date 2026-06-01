@@ -3,6 +3,7 @@
 import copy
 import json
 import os
+import re
 import sys
 import random
 import time
@@ -103,6 +104,8 @@ PIECE_NAMES_DE = {
     "B": "Laeufer", "N": "Springer", "P": "Bauer",
 }
 
+PROMOTION_CHOICES = ("q", "r", "b", "n")
+
 
 def load_settings():
     """Load settings from chess_settings.json."""
@@ -191,6 +194,7 @@ def generate_session_prompt(settings=None):
         "    1. chess_comm/chess_request.json lesen (Brett, legale Zuege, History)",
         "    2. Zug auswaehlen und in chess_comm/chess_response.json schreiben:",
         '       {"move": "e2e4", "comment": "Begruendung"}',
+        '       Bei Bauernumwandlung z.B. {"move": "e7e8n", "comment": "..."}',
         "    3. Auf naechsten Request warten (du wirst vom User gerufen)",
         "",
         "  Einstellungen aendern: chess_settings.json bearbeiten,",
@@ -316,6 +320,86 @@ def parse_pos(s):
     if 0 <= row <= 7 and 0 <= col <= 7:
         return (row, col)
     return None
+
+
+def parse_move_text(text):
+    """Parse UCI-style move text with an optional promotion suffix."""
+    if len(text) not in (4, 5):
+        return None
+    src = parse_pos(text[:2])
+    dst = parse_pos(text[2:4])
+    if not src or not dst:
+        return None
+    promo = None
+    if len(text) == 5:
+        promo = text[4].lower()
+        if promo not in PROMOTION_CHOICES:
+            return None
+    return (src[0], src[1], dst[0], dst[1], promo)
+
+
+def move_to_uci(fr, fc, tr, tc, promo=None):
+    """Format a move tuple as UCI text, preserving promotion info."""
+    move = "{}{}".format(pos_to_str(fr, fc), pos_to_str(tr, tc))
+    if promo:
+        move += promo.lower()
+    return move
+
+
+def is_promotion_move(board, fr, fc, tr):
+    """Return True when the move is a pawn promotion move."""
+    piece = board[fr][fc]
+    return piece != "." and piece.upper() == "P" and tr in (0, 7)
+
+
+def expand_legal_moves(board, legal_moves):
+    """Expand promotion moves into explicit q/r/b/n variants."""
+    expanded = []
+    for move in legal_moves:
+        if len(move) == 4:
+            fr, fc, tr, tc = move
+            promo = None
+        else:
+            fr, fc, tr, tc, promo = move
+        if promo is not None:
+            expanded.append((fr, fc, tr, tc, promo.lower()))
+        elif is_promotion_move(board, fr, fc, tr):
+            for choice in PROMOTION_CHOICES:
+                expanded.append((fr, fc, tr, tc, choice))
+        else:
+            expanded.append((fr, fc, tr, tc, None))
+    return expanded
+
+
+def prompt_for_promotion_choice(prompt_fn=input):
+    """Ask the user which piece to promote to."""
+    while True:
+        try:
+            choice = prompt_fn("  Bauernumwandlung (q/r/b/n, Enter=q): ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            return None
+        if not choice:
+            return "q"
+        if choice in PROMOTION_CHOICES:
+            return choice
+        print("  Bitte q, r, b oder n eingeben.")
+
+
+def resolve_player_move(board, move_text, legal_moves, prompt_fn=input):
+    """Resolve player input into a validated move tuple with promotion info."""
+    parsed = parse_move_text(move_text)
+    if parsed is None:
+        return None
+    fr, fc, tr, tc, promo = parsed
+    if is_promotion_move(board, fr, fc, tr):
+        if promo is None:
+            promo = prompt_for_promotion_choice(prompt_fn)
+            if promo is None:
+                return None
+    elif promo is not None:
+        return None
+    candidate = (fr, fc, tr, tc, promo)
+    return candidate if candidate in legal_moves else None
 
 
 def in_bounds(r, c):
@@ -775,8 +859,9 @@ def claude_choose_move(board, white, legal_moves, en_passant_target, castling_ri
 
     board_text = board_to_text(board)
     color = "Weiss" if white else "Schwarz"
-    legal_strs = ["{}{}".format(pos_to_str(fr, fc), pos_to_str(tr, tc))
-                  for fr, fc, tr, tc in legal_moves]
+    legal_input_moves = expand_legal_moves(board, legal_moves)
+    legal_strs = [move_to_uci(fr, fc, tr, tc, promo)
+                  for fr, fc, tr, tc, promo in legal_input_moves]
 
     history_text = ""
     if move_history:
@@ -786,7 +871,8 @@ def claude_choose_move(board, white, legal_moves, en_passant_target, castling_ri
         "Du spielst Schach als {}.\n\n"
         "Aktuelles Brett:\n{}\n{}\n"
         "Legale Zuege: {}\n\n"
-        "Antworte NUR mit deinem Zug im Format StartfeldZielfeld (z.B. e2e4).\n"
+        "Antworte NUR mit deinem Zug im Format StartfeldZielfeld"
+        " (z.B. e2e4, bei Umwandlung e7e8q).\n"
         "Kein weiterer Text, keine Erklaerung. Nur der Zug."
     ).format(color, board_text, history_text, ", ".join(legal_strs))
 
@@ -797,33 +883,26 @@ def claude_choose_move(board, white, legal_moves, en_passant_target, castling_ri
             max_tokens=20,
             messages=[{"role": "user", "content": prompt}],
         )
-        answer = response.content[0].text.strip().lower().replace(" ", "").replace("-", "").replace(">", "")
-        move_str = ""
-        for ch in answer:
-            if ch in "abcdefgh12345678":
-                move_str += ch
-            if len(move_str) == 4:
-                break
-
-        if len(move_str) == 4:
-            src = parse_pos(move_str[:2])
-            dst = parse_pos(move_str[2:4])
-            if src and dst:
-                fr, fc = src
-                tr, tc = dst
-                if (fr, fc, tr, tc) in legal_moves:
-                    return (fr, fc, tr, tc)
-                print("  Claude schlug ungueltigen Zug vor: {}".format(move_str))
+        answer = response.content[0].text.strip().lower()
+        match = re.search(r"[a-h][1-8][a-h][1-8][qrbn]?", answer)
+        if match:
+            parsed = parse_move_text(match.group(0))
+            if parsed:
+                fr, fc, tr, tc, promo = parsed
+                candidate = (fr, fc, tr, tc, promo)
+                if candidate in legal_input_moves:
+                    return candidate
+                print("  Claude schlug ungueltigen Zug vor: {}".format(match.group(0)))
 
         print("  -> Fallback: Zufaelliger Zug")
         input("  [Enter]")
-        return random.choice(legal_moves)
+        return random.choice(legal_input_moves)
 
     except Exception as e:
         print("  Claude-API Fehler: {}".format(e))
         print("  -> Fallback: Zufaelliger Zug")
         input("  [Enter]")
-        return random.choice(legal_moves)
+        return random.choice(legal_input_moves)
 
 
 # ---------------------------------------------------------------------------
@@ -940,8 +1019,9 @@ def write_request(board, white, legal_moves, move_history, check,
 def build_worker_request_data(board, white, legal_moves, move_history, check,
                               en_passant_target=None, castling_rights=None):
     """Build the JSON payload for the Claude-Code worker."""
-    legal_strs = ["{}{}".format(pos_to_str(fr, fc), pos_to_str(tr, tc))
-                  for fr, fc, tr, tc in legal_moves]
+    legal_input_moves = expand_legal_moves(board, legal_moves)
+    legal_strs = [move_to_uci(fr, fc, tr, tc, promo)
+                  for fr, fc, tr, tc, promo in legal_input_moves]
     data = {
         "board": board,
         "board_text": board_to_text(board),
@@ -986,15 +1066,11 @@ def infer_en_passant_target_from_history(board, history):
     """Fallback for older requests that do not carry explicit en-passant state."""
     en_passant_target = None
     if history:
-        last = history[-1]
-        if len(last) >= 4:
-            ls = parse_pos(last[:2])
-            ld = parse_pos(last[2:4])
-            if ls and ld:
-                lfr, lfc = ls
-                ltr, ltc = ld
-                if board[ltr][ltc].upper() == "P" and abs(lfr - ltr) == 2:
-                    en_passant_target = ((lfr + ltr) // 2, lfc)
+        parsed = parse_move_text(history[-1])
+        if parsed:
+            lfr, lfc, ltr, ltc, _ = parsed
+            if board[ltr][ltc].upper() == "P" and abs(lfr - ltr) == 2:
+                en_passant_target = ((lfr + ltr) // 2, lfc)
     return en_passant_target
 
 
@@ -1008,11 +1084,9 @@ def load_worker_state(data):
 
     legal_moves = []
     for ms in legal_strs:
-        if len(ms) >= 4:
-            src = parse_pos(ms[:2])
-            dst = parse_pos(ms[2:4])
-            if src and dst:
-                legal_moves.append((src[0], src[1], dst[0], dst[1]))
+        parsed = parse_move_text(ms)
+        if parsed:
+            legal_moves.append(parsed)
 
     castling_raw = data.get("castling_rights")
     if castling_raw is not None:
@@ -1073,6 +1147,7 @@ def wait_for_response(timeout=300):
 def claude_code_choose_move(board, white, legal_moves, move_history, check,
                             en_passant_target=None, castling_rights=None):
     """Write the move request and wait for a Claude Code response."""
+    legal_input_moves = expand_legal_moves(board, legal_moves)
     write_request(board, white, legal_moves, move_history, check,
                   en_passant_target, castling_rights)
     print("  Warte auf Claude Code...")
@@ -1088,22 +1163,17 @@ def claude_code_choose_move(board, white, legal_moves, move_history, check,
         print("\n  Timeout! Keine Antwort von Claude Code.")
         print("  -> Fallback: Zufaelliger Zug")
         input("  [Enter]")
-        return random.choice(legal_moves)
+        return random.choice(legal_input_moves)
 
     move_str = move_str.strip().lower()
-    if len(move_str) >= 4:
-        src = parse_pos(move_str[:2])
-        dst = parse_pos(move_str[2:4])
-        if src and dst:
-            fr, fc = src
-            tr, tc = dst
-            if (fr, fc, tr, tc) in legal_moves:
-                return (fr, fc, tr, tc)
+    parsed = parse_move_text(move_str)
+    if parsed and parsed in legal_input_moves:
+        return parsed
 
     print("  Ungueltiger Zug von Claude Code: {}".format(move_str))
     print("  -> Fallback: Zufaelliger Zug")
     input("  [Enter]")
-    return random.choice(legal_moves)
+    return random.choice(legal_input_moves)
 
 
 # ---------------------------------------------------------------------------
@@ -1148,8 +1218,12 @@ def run_worker():
                 if not move:
                     move = random.choice(legal_moves)
 
-                fr, fc, tr, tc = move
-                move_str = "{}{}".format(pos_to_str(fr, fc), pos_to_str(tr, tc))
+                if len(move) == 5:
+                    fr, fc, tr, tc, promo = move
+                else:
+                    fr, fc, tr, tc = move
+                    promo = None
+                move_str = move_to_uci(fr, fc, tr, tc, promo)
 
                 response = {"move": move_str, "timestamp": time.time()}
                 with open(RESPONSE_FILE, "w", encoding="utf-8") as f:
@@ -1242,6 +1316,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
     while True:
         check = in_check(board, white_turn)
         legal = get_legal_moves(board, white_turn, en_passant_target, castling_rights)
+        legal_input_moves = expand_legal_moves(board, legal)
 
         if not legal:
             render(board, white_turn, last_move_str, check, mode_info)
@@ -1276,7 +1351,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
         if is_human:
             try:
-                inp = input("  Zug (z.B. e2e4, q=quit): ").strip().lower()
+                inp = input("  Zug (z.B. e2e4, e7e8q, q=quit): ").strip().lower()
             except (EOFError, KeyboardInterrupt):
                 print("\n  Spiel beendet.")
                 return
@@ -1290,21 +1365,13 @@ def game_loop(mode, player_white=True, bot_depth=3):
                 input("  [Enter]")
                 continue
 
-            src = parse_pos(inp[:2])
-            dst = parse_pos(inp[2:4])
-
-            if not src or not dst:
+            move = resolve_player_move(board, inp, legal_input_moves)
+            if move is None:
                 print("  Ungueltiges Feld!")
                 input("  [Enter]")
                 continue
 
-            fr, fc = src
-            tr, tc = dst
-
-            if (fr, fc, tr, tc) not in legal:
-                print("  Ungueltiger Zug!")
-                input("  [Enter]")
-                continue
+            fr, fc, tr, tc, promo = move
 
         elif mode == "bot":
             print("  Bot denkt nach...")
@@ -1313,6 +1380,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
             if not move:
                 return
             fr, fc, tr, tc = move
+            promo = None
 
         elif mode == "claude":
             move = claude_choose_move(board, white_turn, legal,
@@ -1320,7 +1388,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
                                       move_history)
             if not move:
                 return
-            fr, fc, tr, tc = move
+            fr, fc, tr, tc, promo = move
 
         elif mode == "claude_code":
             move = claude_code_choose_move(board, white_turn, legal,
@@ -1328,7 +1396,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
                                            en_passant_target, castling_rights)
             if not move:
                 return
-            fr, fc, tr, tc = move
+            fr, fc, tr, tc, promo = move
 
         piece = board[fr][fc]
 
@@ -1338,10 +1406,10 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
         update_castling_rights(castling_rights, piece, fr, fc, tr, tc)
 
-        board = make_move(board, fr, fc, tr, tc, en_passant_target)
+        board = make_move(board, fr, fc, tr, tc, en_passant_target, promo)
         en_passant_target = new_ep
 
-        move_str = "{}{}".format(pos_to_str(fr, fc), pos_to_str(tr, tc))
+        move_str = move_to_uci(fr, fc, tr, tc, promo)
         move_history.append(move_str)
         color = "W" if white_turn else "S"
         last_move_str = "{}: {} -> {}".format(color, pos_to_str(fr, fc), pos_to_str(tr, tc))

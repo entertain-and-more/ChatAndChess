@@ -8,6 +8,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import chess  # noqa: E402
+import chess_analyze  # noqa: E402
 
 
 class WorkerStateTests(unittest.TestCase):
@@ -47,7 +48,7 @@ class WorkerStateTests(unittest.TestCase):
         loaded = chess.load_worker_state(data)
         self.assertEqual(loaded["castling_rights"], castling_rights)
         self.assertEqual(loaded["en_passant_target"], en_passant_target)
-        self.assertNotIn((7, 4, 7, 6), loaded["legal_moves"])
+        self.assertNotIn((7, 4, 7, 6, None), loaded["legal_moves"])
 
     def test_legal_moves_do_not_allow_capturing_the_enemy_king(self):
         board = [["." for _ in range(8)] for _ in range(8)]
@@ -58,6 +59,51 @@ class WorkerStateTests(unittest.TestCase):
         legal = chess.get_legal_moves(board, True, None, set())
 
         self.assertNotIn((1, 4, 0, 4), legal)
+
+    def test_build_worker_request_expands_promotion_variants(self):
+        board = [["." for _ in range(8)] for _ in range(8)]
+        board[7][4] = "K"
+        board[0][4] = "k"
+        board[1][0] = "P"
+
+        data = chess.build_worker_request_data(
+            board,
+            True,
+            [(1, 0, 0, 0)],
+            [],
+            False,
+        )
+
+        self.assertEqual(
+            data["legal_moves"],
+            ["a7a8q", "a7a8r", "a7a8b", "a7a8n"],
+        )
+
+    def test_resolve_player_move_prompts_for_underpromotion_choice(self):
+        board = [["." for _ in range(8)] for _ in range(8)]
+        board[7][4] = "K"
+        board[0][4] = "k"
+        board[1][0] = "P"
+
+        legal_moves = chess.expand_legal_moves(board, [(1, 0, 0, 0)])
+        move = chess.resolve_player_move(
+            board,
+            "a7a8",
+            legal_moves,
+            prompt_fn=lambda _: "n",
+        )
+
+        self.assertEqual(move, (1, 0, 0, 0, "n"))
+
+    def test_analyzer_apply_uci_preserves_promotion_suffix(self):
+        board = [["." for _ in range(8)] for _ in range(8)]
+        board[7][4] = "K"
+        board[0][4] = "k"
+        board[1][0] = "P"
+
+        new_board, _, _ = chess_analyze.apply_uci(board, "a7a8n", None, {"K", "Q", "k", "q"})
+
+        self.assertEqual(new_board[0][0], "N")
 
 
 if __name__ == "__main__":
