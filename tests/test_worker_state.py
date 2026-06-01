@@ -105,6 +105,14 @@ class WorkerStateTests(unittest.TestCase):
 
         self.assertEqual(new_board[0][0], "N")
 
+    def test_uci_to_coords_returns_none_on_invalid_rank_digit(self):
+        """Regression: uci_to_coords must not raise ValueError for bad rank chars.
+        Before the fix, int(uci[1]) on non-digit input propagated uncaught,
+        crashing main() instead of falling through to the 'Ungueltiger Zug' path."""
+        self.assertIsNone(chess_analyze.uci_to_coords("exe5"))  # 'x' not a digit
+        self.assertIsNone(chess_analyze.uci_to_coords("e4e$"))  # '$' not a digit
+        self.assertIsNone(chess_analyze.uci_to_coords("abcd"))  # 'c','d' as file OK, 'b','d' as rank not
+
 
 if __name__ == "__main__":
     unittest.main()

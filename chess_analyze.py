@@ -42,10 +42,13 @@ def uci_to_coords(uci):
     """Convert UCI text to coordinates plus an optional promotion suffix."""
     if len(uci) not in (4, 5):
         return None
-    fc = ord(uci[0].lower()) - ord('a')
-    fr = 8 - int(uci[1])
-    tc = ord(uci[2].lower()) - ord('a')
-    tr = 8 - int(uci[3])
+    try:
+        fc = ord(uci[0].lower()) - ord('a')
+        fr = 8 - int(uci[1])
+        tc = ord(uci[2].lower()) - ord('a')
+        tr = 8 - int(uci[3])
+    except (ValueError, IndexError):
+        return None
     promo = None
     if len(uci) == 5:
         promo = uci[4].lower()
