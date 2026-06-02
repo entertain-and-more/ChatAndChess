@@ -30,8 +30,8 @@ COMM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chess_comm"
 REQUEST_FILE = os.path.join(COMM_DIR, "chess_request.json")
 
 PIECE_NAMES = {
-    "K": "Koenig", "Q": "Dame", "R": "Turm",
-    "B": "Laeufer", "N": "Springer", "P": "Bauer",
+    "K": "König", "Q": "Dame", "R": "Turm",
+    "B": "Läufer", "N": "Springer", "P": "Bauer",
 }
 
 # -----------------------------------------------------------------------
@@ -210,7 +210,7 @@ def analyze_candidates(board, white, ep_target, castling_rights, depth=3, top_n=
 def print_candidates(results, board, white):
     """Print the candidate move list in a formatted layout."""
     sign = 1 if white else -1
-    print("  Rang  Zug    Eval   Figur  Schlaegt")
+    print("  Rang  Zug    Eval   Figur  Schlägt")
     print("  " + "-" * 50)
     for i, (score, uci, fr, fc, tr, tc, captured, piece) in enumerate(results, 1):
         eval_str = "{:+.0f}".format(score * sign)
@@ -260,7 +260,7 @@ def main():
 
     move_history = data.get("move_history", [])
     board, white_turn, ep_target, castling_rights = replay_history(move_history)
-    color_str = "Weiss" if white_turn else "Schwarz"
+    color_str = "Weiß" if white_turn else "Schwarz"
 
     print()
     print("=" * 60)
@@ -285,9 +285,9 @@ def main():
     ws, bs = material_score(board)
     wm, bm = material_balance(board)
     diff = ws - bs
-    diff_str = "(+{} Weiss)".format(diff) if diff > 0 else ("({} Schwarz)".format(-diff) if diff < 0 else "(ausgeglichen)")
+    diff_str = "(+{} Weiß)".format(diff) if diff > 0 else ("({} Schwarz)".format(-diff) if diff < 0 else "(ausgeglichen)")
     print("  Material:")
-    print("    Weiss: {} = {} Punkte".format(fmt_pieces(wm), ws))
+    print("    Weiß: {} = {} Punkte".format(fmt_pieces(wm), ws))
     print("    Schwarz: {} = {} Punkte".format(fmt_pieces(bm), bs))
     print("    Bilanz: {}".format(diff_str))
     print()
@@ -308,7 +308,7 @@ def main():
         for uci in move_args:
             coords = uci_to_coords(uci)
             if not coords:
-                print("  Ungueltiger Zug: {}".format(uci))
+                print("  Ungültiger Zug: {}".format(uci))
                 continue
             fr, fc, tr, tc, _ = coords
             piece = sim_board[fr][fc]
@@ -318,7 +318,7 @@ def main():
             pname = PIECE_NAMES.get(piece.upper(), "?")
             captured = sim_board[tr][tc]
             cap_str = " x{}".format(captured) if captured != "." else ""
-            who = "Weiss" if sim_white else "Schwarz"
+            who = "Weiß" if sim_white else "Schwarz"
             print("  Zug: {} {} {}{}".format(who, pname, uci, cap_str))
 
             sim_board, sim_ep, sim_cr = apply_uci(sim_board, uci, sim_ep, sim_cr)
@@ -327,15 +327,15 @@ def main():
             draw_board(sim_board, last_move=uci)
             sim_ws, sim_bs = material_score(sim_board)
             sim_diff = sim_ws - sim_bs
-            sim_diff_str = "(+{} Weiss)".format(sim_diff) if sim_diff > 0 else ("({} Schwarz)".format(-sim_diff) if sim_diff < 0 else "(ausgeglichen)")
-            print("  Material nach Zug: Weiss {} | Schwarz {} | {}".format(sim_ws, sim_bs, sim_diff_str))
+            sim_diff_str = "(+{} Weiß)".format(sim_diff) if sim_diff > 0 else ("({} Schwarz)".format(-sim_diff) if sim_diff < 0 else "(ausgeglichen)")
+            print("  Material nach Zug: Weiß {} | Schwarz {} | {}".format(sim_ws, sim_bs, sim_diff_str))
             if in_check(sim_board, sim_white):
                 print("  *** SCHACH! ***")
             print()
 
-    # Kandidaten-Zuege bewerten
+    # Kandidaten-Züge bewerten
     print("  -- TOP {} KANDIDATEN ({} ist dran, Tiefe {}) --".format(
-        top_n, "Weiss" if sim_white else "Schwarz", depth))
+        top_n, "Weiß" if sim_white else "Schwarz", depth))
     print("  Bitte warten...")
     candidates = analyze_candidates(sim_board, sim_white, sim_ep, sim_cr, depth, top_n)
     if candidates:
@@ -344,7 +344,7 @@ def main():
         print("  => Empfehlung: {} ({})".format(
             best[1], PIECE_NAMES.get(best[7].upper(), "?")))
     else:
-        print("  Keine legalen Zuege!")
+        print("  Keine legalen Züge!")
     print("=" * 60)
 
 

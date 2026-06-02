@@ -92,7 +92,7 @@ INITIAL_BOARD = [
     ["R", "N", "B", "Q", "K", "B", "N", "R"],
 ]
 
-# Kommunikationspfad fuer Claude-Code Modus
+# Kommunikationspfad für Claude-Code Modus
 COMM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chess_comm")
 REQUEST_FILE = os.path.join(COMM_DIR, "chess_request.json")
 RESPONSE_FILE = os.path.join(COMM_DIR, "chess_response.json")
@@ -100,8 +100,8 @@ SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chess_
 PROMPT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "CLAUDE_PROMPT.txt")
 
 PIECE_NAMES_DE = {
-    "K": "Koenig", "Q": "Dame", "R": "Turm",
-    "B": "Laeufer", "N": "Springer", "P": "Bauer",
+    "K": "König", "Q": "Dame", "R": "Turm",
+    "B": "Läufer", "N": "Springer", "P": "Bauer",
 }
 
 PROMOTION_CHOICES = ("q", "r", "b", "n")
@@ -141,28 +141,28 @@ def generate_session_prompt(settings=None):
         mode_name = "GLEICHZUG-MODUS (Beide sehen Engine-Hints)"
         claude_instr = (
             "Du siehst in chess_request.json das Feld 'top_moves' mit den Top-{} "
-            "Zuegen (Tiefe {}) -- dieselbe Liste sieht auch der menschliche Spieler "
+            "Zügen (Tiefe {}) -- dieselbe Liste sieht auch der menschliche Spieler "
             "im Terminal. Nutze diese als Orientierung, triff aber eigene "
-            "Entscheidungen und begruende deinen Zug.".format(top_n, depth)
+            "Entscheidungen und begründe deinen Zug.".format(top_n, depth)
         )
     elif uses_engine and not show_hints:
         mode_name = "ENGINE-MODUS (Nur Claude sieht Engine-Hints -- NICHT FAIR)"
         claude_instr = (
             "Du siehst in chess_request.json das Feld 'top_moves'. "
             "Hinweis: Der menschliche Spieler sieht diese Hints NICHT. "
-            "Ueberlege ob das fair ist."
+            "Überlege ob das fair ist."
         )
     elif not uses_engine and show_hints:
         mode_name = "TRAINING-MODUS (Nur Mensch sieht Hints, Claude spielt menschlich)"
         claude_instr = (
-            "Spiele OHNE Engine-Unterstuetzung -- reines Reasoning und Intuition. "
+            "Spiele OHNE Engine-Unterstützung -- reines Reasoning und Intuition. "
             "Kein chess_analyze.py aufrufen. Der menschliche Spieler sieht Hints, "
-            "du nicht. Das ist der Trainings-Modus fuer den Menschen."
+            "du nicht. Das ist der Trainings-Modus für den Menschen."
         )
     else:
-        mode_name = "MENSCH-MODUS (Keine Hints fuer beide)"
+        mode_name = "MENSCH-MODUS (Keine Hints für beide)"
         claude_instr = (
-            "Spiele OHNE Engine-Unterstuetzung -- reines Reasoning und Intuition. "
+            "Spiele OHNE Engine-Unterstützung -- reines Reasoning und Intuition. "
             "Kein chess_analyze.py aufrufen. Weder du noch der Mensch bekommen "
             "Engine-Hints. Fairer Wettbewerb auf Augenlinie."
         )
@@ -183,7 +183,7 @@ def generate_session_prompt(settings=None):
         "    hint_depth          = {}".format(depth),
         "    claude_uses_engine  = {}".format(uses_engine),
         "",
-        "  Anweisung fuer Claude:",
+        "  Anweisung für Claude:",
         "",
     ]
     for part in claude_instr.split(". "):
@@ -191,14 +191,14 @@ def generate_session_prompt(settings=None):
     lines += [
         "",
         "  Spielablauf:",
-        "    1. chess_comm/chess_request.json lesen (Brett, legale Zuege, History)",
-        "    2. Zug auswaehlen und in chess_comm/chess_response.json schreiben:",
-        '       {"move": "e2e4", "comment": "Begruendung"}',
+        "    1. chess_comm/chess_request.json lesen (Brett, legale Züge, History)",
+        "    2. Zug auswählen und in chess_comm/chess_response.json schreiben:",
+        '       {"move": "e2e4", "comment": "Begründung"}',
         '       Bei Bauernumwandlung z.B. {"move": "e7e8n", "comment": "..."}',
-        "    3. Auf naechsten Request warten (du wirst vom User gerufen)",
+        "    3. Auf nächsten Request warten (du wirst vom User gerufen)",
         "",
-        "  Einstellungen aendern: chess_settings.json bearbeiten,",
-        "  dann 'python chess.py --prompt' fuer neuen Prompt.",
+        "  Einstellungen ändern: chess_settings.json bearbeiten,",
+        "  dann 'python chess.py --prompt' für neuen Prompt.",
         "",
         "=" * 60,
     ]
@@ -242,7 +242,7 @@ def display_hints(hints, white, show_recommendation):
         return
     sign = 1 if white else -1
     print()
-    print("  Tipp-Zuege (Engine-Bewertung):")
+    print("  Tipp-Züge (Engine-Bewertung):")
     for i, (score, uci, piece, captured) in enumerate(hints, 1):
         eval_str = "{:+.0f}".format(score * sign)
         pname = PIECE_NAMES_DE.get(piece.upper(), "?")
@@ -299,7 +299,7 @@ def render(board, white_turn, last_move=None, check=False, mode_info=""):
         print("   +---+---+---+---+---+---+---+---+")
     print("     A   B   C   D   E   F   G   H")
     print()
-    turn = "Weiss" if white_turn else "Schwarz"
+    turn = "Weiß" if white_turn else "Schwarz"
     status = "  {} ist am Zug".format(turn)
     if check:
         status += " [SCHACH!]"
@@ -706,8 +706,8 @@ def board_to_text(board):
         lines.append("{} {}".format(row_num, " ".join(row_chars)))
     lines.append("  a b c d e f g h")
     lines.append("")
-    lines.append("Grossbuchstaben = Weiss, Kleinbuchstaben = Schwarz")
-    lines.append("K=Koenig Q=Dame R=Turm B=Laeufer N=Springer P=Bauer")
+    lines.append("Großbuchstaben = Weiß, Kleinbuchstaben = Schwarz")
+    lines.append("K=König Q=Dame R=Turm B=Läufer N=Springer P=Bauer")
     return "\n".join(lines)
 
 
@@ -858,22 +858,22 @@ def claude_choose_move(board, white, legal_moves, en_passant_target, castling_ri
     client = anthropic.Anthropic(api_key=api_key)
 
     board_text = board_to_text(board)
-    color = "Weiss" if white else "Schwarz"
+    color = "Weiß" if white else "Schwarz"
     legal_input_moves = expand_legal_moves(board, legal_moves)
     legal_strs = [move_to_uci(fr, fc, tr, tc, promo)
                   for fr, fc, tr, tc, promo in legal_input_moves]
 
     history_text = ""
     if move_history:
-        history_text = "\nBisherige Zuege: {}\n".format(", ".join(move_history[-20:]))
+        history_text = "\nBisherige Züge: {}\n".format(", ".join(move_history[-20:]))
 
     prompt = (
         "Du spielst Schach als {}.\n\n"
         "Aktuelles Brett:\n{}\n{}\n"
-        "Legale Zuege: {}\n\n"
+        "Legale Züge: {}\n\n"
         "Antworte NUR mit deinem Zug im Format StartfeldZielfeld"
         " (z.B. e2e4, bei Umwandlung e7e8q).\n"
-        "Kein weiterer Text, keine Erklaerung. Nur der Zug."
+        "Kein weiterer Text, keine Erklärung. Nur der Zug."
     ).format(color, board_text, history_text, ", ".join(legal_strs))
 
     try:
@@ -892,15 +892,15 @@ def claude_choose_move(board, white, legal_moves, en_passant_target, castling_ri
                 candidate = (fr, fc, tr, tc, promo)
                 if candidate in legal_input_moves:
                     return candidate
-                print("  Claude schlug ungueltigen Zug vor: {}".format(match.group(0)))
+                print("  Claude schlug ungültigen Zug vor: {}".format(match.group(0)))
 
-        print("  -> Fallback: Zufaelliger Zug")
+        print("  -> Fallback: Zufälliger Zug")
         input("  [Enter]")
         return random.choice(legal_input_moves)
 
     except Exception as e:
         print("  Claude-API Fehler: {}".format(e))
-        print("  -> Fallback: Zufaelliger Zug")
+        print("  -> Fallback: Zufälliger Zug")
         input("  [Enter]")
         return random.choice(legal_input_moves)
 
@@ -912,7 +912,7 @@ def claude_choose_move(board, white, legal_moves, en_passant_target, castling_ri
 MODES = [
     {
         "name": "Mensch-Modus",
-        "desc": "Fairer Wettkampf -- keine Hints fuer beide, Claude spielt ohne Engine",
+        "desc": "Fairer Wettkampf -- keine Hints für beide, Claude spielt ohne Engine",
         "settings": {"show_hints": False, "show_recommendation": False, "claude_uses_engine": False},
     },
     {
@@ -927,7 +927,7 @@ MODES = [
     },
     {
         "name": "Analyse-Modus",
-        "desc": "Keine Hints im Spiel -- aber chess_analyze.py fuer Nachbereitung verfuegbar",
+        "desc": "Keine Hints im Spiel -- aber chess_analyze.py für Nachbereitung verfügbar",
         "settings": {"show_hints": False, "show_recommendation": False, "claude_uses_engine": False},
     },
 ]
@@ -945,7 +945,7 @@ def choose_game_mode():
         print()
     while True:
         try:
-            choice = input("  Modus waehlen (1-{}): ".format(len(MODES))).strip()
+            choice = input("  Modus wählen (1-{}): ".format(len(MODES))).strip()
         except (EOFError, KeyboardInterrupt):
             return None
         if choice.isdigit() and 1 <= int(choice) <= len(MODES):
@@ -1026,7 +1026,7 @@ def build_worker_request_data(board, white, legal_moves, move_history, check,
         "board": board,
         "board_text": board_to_text(board),
         "white_turn": white,
-        "color": "Weiss" if white else "Schwarz",
+        "color": "Weiß" if white else "Schwarz",
         "legal_moves": legal_strs,
         "move_history": move_history,
         "check": check,
@@ -1155,13 +1155,13 @@ def claude_code_choose_move(board, white, legal_moves, move_history, check,
 
     move_str = wait_for_response()
 
-    # Request aufraeumen
+    # Request aufräumen
     if os.path.exists(REQUEST_FILE):
         os.remove(REQUEST_FILE)
 
     if not move_str:
         print("\n  Timeout! Keine Antwort von Claude Code.")
-        print("  -> Fallback: Zufaelliger Zug")
+        print("  -> Fallback: Zufälliger Zug")
         input("  [Enter]")
         return random.choice(legal_input_moves)
 
@@ -1170,8 +1170,8 @@ def claude_code_choose_move(board, white, legal_moves, move_history, check,
     if parsed and parsed in legal_input_moves:
         return parsed
 
-    print("  Ungueltiger Zug von Claude Code: {}".format(move_str))
-    print("  -> Fallback: Zufaelliger Zug")
+    print("  Ungültiger Zug von Claude Code: {}".format(move_str))
+    print("  -> Fallback: Zufälliger Zug")
     input("  [Enter]")
     return random.choice(legal_input_moves)
 
@@ -1183,7 +1183,7 @@ def claude_code_choose_move(board, white, legal_moves, move_history, check,
 def run_worker():
     """Worker loop: monitors chess_request.json and delegates to the bot engine."""
     print("Chess Worker gestartet.")
-    print("Ueberwache: {}".format(COMM_DIR))
+    print("Überwache: {}".format(COMM_DIR))
     print("Beenden mit Ctrl+C")
     print()
 
@@ -1206,12 +1206,12 @@ def run_worker():
                 en_passant_target = state["en_passant_target"]
 
                 if not legal_moves:
-                    print("[Worker] Keine legalen Zuege!")
+                    print("[Worker] Keine legalen Züge!")
                     continue
 
-                # Bot-Engine fuer Zugwahl nutzen
-                print("[Worker] Berechne Zug fuer {}...".format(
-                    "Weiss" if white else "Schwarz"))
+                # Bot-Engine für Zugwahl nutzen
+                print("[Worker] Berechne Zug für {}...".format(
+                    "Weiß" if white else "Schwarz"))
 
                 move = bot_choose_move(board, white, en_passant_target,
                                        castling_rights, depth=3)
@@ -1231,7 +1231,7 @@ def run_worker():
 
                 print("[Worker] Zug: {}".format(move_str))
 
-                # Request loeschen
+                # Request löschen
                 if os.path.exists(REQUEST_FILE):
                     os.remove(REQUEST_FILE)
 
@@ -1268,8 +1268,8 @@ def show_menu():
 
 def choose_color():
     print()
-    print("  Welche Farbe moechtest du spielen?")
-    print("    [w]  Weiss")
+    print("  Welche Farbe möchtest du spielen?")
+    print("    [w]  Weiß")
     print("    [s]  Schwarz")
     print()
     c = input("  Auswahl: ").strip().lower()
@@ -1321,7 +1321,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
         if not legal:
             render(board, white_turn, last_move_str, check, mode_info)
             if check:
-                winner = "Schwarz" if white_turn else "Weiss"
+                winner = "Schwarz" if white_turn else "Weiß"
                 print("  SCHACHMATT! {} gewinnt!".format(winner))
             else:
                 print("  PATT! Unentschieden.")
@@ -1331,7 +1331,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
                             "winner": ("black" if white_turn else "white") if check else "draw"}
                 with open(os.path.join(COMM_DIR, "chess_gameover.json"), "w", encoding="utf-8") as f:
                     json.dump(end_data, f, ensure_ascii=False)
-            input("\n  [Enter fuer Menue]")
+            input("\n  [Enter für Menü]")
             return
 
         render(board, white_turn, last_move_str, check, mode_info)
@@ -1361,13 +1361,13 @@ def game_loop(mode, player_white=True, bot_depth=3):
                 return
 
             if len(inp) < 4:
-                print("  Ungueltiges Format! Nutze z.B. e2e4")
+                print("  Ungültiges Format! Nutze z.B. e2e4")
                 input("  [Enter]")
                 continue
 
             move = resolve_player_move(board, inp, legal_input_moves)
             if move is None:
-                print("  Ungueltiges Feld!")
+                print("  Ungültiges Feld!")
                 input("  [Enter]")
                 continue
 
@@ -1417,7 +1417,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
 
 def main():
-    # CLI-Argumente pruefen
+    # CLI-Argumente prüfen
     if len(sys.argv) > 1 and sys.argv[1] == "--worker":
         run_worker()
         return
@@ -1455,7 +1455,7 @@ def main():
             print("  Auf Wiedersehen!")
             break
         else:
-            print("  Ungueltige Auswahl!")
+            print("  Ungültige Auswahl!")
             input("  [Enter]")
 
 

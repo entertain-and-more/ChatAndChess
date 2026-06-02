@@ -4,6 +4,9 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added a GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
+- Updated community workflow actions and first-interaction input names.
+- Added `llms.txt` and linked the local test command from the README.
 - Moved the gameplay screenshot into `README/screenshots/` to match the repository documentation policy.
 - Expanded the README with clearer German/English setup, usage, privacy, and project-structure notes.
 - Extended `.gitignore` for local database files and common Python test/cache outputs.

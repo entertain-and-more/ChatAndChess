@@ -1,5 +1,7 @@
 # ChatAndChess
 
+[![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
+
 Terminal-Schach für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Integration.
 Terminal chess for local games, a Minimax bot, Claude API mode, and Claude Code integration.
 
@@ -73,6 +75,13 @@ python chess_analyze.py e2e4 e7e5 g1f3
 python chess_analyze.py --top 8
 ```
 
+## Tests
+
+```bash
+python -m unittest discover -s tests -p "test_*.py"
+python -m py_compile chess.py chess_analyze.py
+```
+
 ## Datenschutz / Privacy
 
 ChatAndChess speichert Spiel- und Worker-Laufzeitdaten lokal. API-Schlüssel gehören in die
@@ -115,6 +124,7 @@ chess_settings.json   Local game settings (gitignored)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security Policy](SECURITY.md)
 - [Changelog](CHANGELOG.md)
+- [LLM context](llms.txt)
 
 ---
 
