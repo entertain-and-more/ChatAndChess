@@ -4,6 +4,10 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added `tests/linux_platform_smoke.py` to validate the Linux source path for
+  `python chess.py`, `python chess.py --worker`, and `python chess_analyze.py`.
+- Extended `.github/workflows/tests.yml` to run the Linux platform smoke on
+  `ubuntu-latest`.
 - Added a GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
 - Updated community workflow actions and first-interaction input names.
 - Added `llms.txt` and linked the local test command from the README.

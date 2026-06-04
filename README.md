@@ -80,6 +80,7 @@ python chess_analyze.py --top 8
 ```bash
 python -m unittest discover -s tests -p "test_*.py"
 python -m py_compile chess.py chess_analyze.py
+python tests/linux_platform_smoke.py
 ```
 
 ## Datenschutz / Privacy
@@ -109,6 +110,8 @@ chess_analyze.py      Tactics analyzer (position evaluation, candidate moves)
 START_CHESS.bat       Windows launcher
 build_exe.bat         Optional PyInstaller build helper for Windows
 requirements.txt      Base/optional dependency notes
+tests/linux_platform_smoke.py
+                     Linux source smoke for menu quit, worker boot, and analyzer
 README/screenshots/   Repository screenshots used by the README
 chess_comm/           Runtime communication directory (gitignored)
 chess_settings.json   Local game settings (gitignored)
