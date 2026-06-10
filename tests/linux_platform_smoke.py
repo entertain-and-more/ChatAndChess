@@ -87,17 +87,26 @@ def smoke_worker_boot():
     )
     try:
         time.sleep(1.0)
-        proc.send_signal(signal.SIGINT)
+        if sys.platform == "win32":
+            proc.terminate()
+        else:
+            proc.send_signal(signal.SIGINT)
         stdout, _ = proc.communicate(timeout=10)
     finally:
         if proc.poll() is None:
             proc.kill()
             proc.wait(timeout=5)
             stdout = ""
-    if proc.returncode not in (0, 130):
-        raise AssertionError(f"Worker smoke failed with exit code {proc.returncode}\n{stdout}")
-    if "Chess Worker gestartet." not in stdout or "[Worker] Beendet." not in stdout:
-        raise AssertionError(f"Unexpected worker smoke output:\n{stdout}")
+    
+    # On Windows, we terminate the process, so we don't strict-check the returncode or the exit message.
+    if sys.platform != "win32":
+        if proc.returncode not in (0, 130):
+            raise AssertionError(f"Worker smoke failed with exit code {proc.returncode}\n{stdout}")
+        if "[Worker] Beendet." not in stdout:
+            raise AssertionError(f"Unexpected worker smoke output (missing end marker):\n{stdout}")
+            
+    if "Chess Worker gestartet." not in stdout:
+        raise AssertionError(f"Unexpected worker smoke output (missing start marker):\n{stdout}")
 
 
 def write_request_fixture():
