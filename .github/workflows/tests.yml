@@ -12,10 +12,11 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
@@ -33,5 +34,5 @@ jobs:
       - name: Run unit tests
         run: python -m unittest discover -s tests -p "test_*.py"
 
-      - name: Run Linux platform smoke
-        run: python tests/linux_platform_smoke.py
+      - name: Run platform smoke
+        run: python tests/source_platform_smoke.py

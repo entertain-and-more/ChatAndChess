@@ -711,6 +711,73 @@ def board_to_text(board):
     return "\n".join(lines)
 
 
+def board_to_fen(board, white_to_move, castling_rights, en_passant_target,
+                 halfmove=0, fullmove=1):
+    """Return a FEN string for the given position."""
+    ranks = []
+    for row in range(8):
+        empty = 0
+        rank_str = ""
+        for col in range(8):
+            piece = board[row][col]
+            if piece == ".":
+                empty += 1
+            else:
+                if empty:
+                    rank_str += str(empty)
+                    empty = 0
+                rank_str += piece
+        if empty:
+            rank_str += str(empty)
+        ranks.append(rank_str)
+    board_fen = "/".join(ranks)
+    side = "w" if white_to_move else "b"
+    castling_str = ""
+    for flag in ("K", "Q", "k", "q"):
+        if flag in castling_rights:
+            castling_str += flag
+    if not castling_str:
+        castling_str = "-"
+    if en_passant_target is not None:
+        ep_row, ep_col = en_passant_target
+        ep_str = chr(ord("a") + ep_col) + str(8 - ep_row)
+    else:
+        ep_str = "-"
+    return f"{board_fen} {side} {castling_str} {ep_str} {halfmove} {fullmove}"
+
+
+def build_game_export(board, white, castling_rights, en_passant_target,
+                      move_history, mode_kind="local", bot_depth=None):
+    """Return a chatandchess-game-v1.json compatible dict."""
+    fen = board_to_fen(board, white, castling_rights, en_passant_target)
+    castling_str = "".join(f for f in ("K", "Q", "k", "q") if f in castling_rights) or "-"
+    ep_str = None
+    if en_passant_target is not None:
+        r, c = en_passant_target
+        ep_str = chr(ord("a") + c) + str(8 - r)
+    moves = []
+    for i, m in enumerate(move_history):
+        by = "white" if i % 2 == 0 else "black"
+        moves.append({"uci": m, "san": None, "by": by})
+    return {
+        "schema": "chatandchess-game-v1",
+        "app": "ChatAndChess",
+        "position": {
+            "fen": fen,
+            "side_to_move": "white" if white else "black",
+            "castling_rights": castling_str,
+            "en_passant": ep_str,
+        },
+        "moves": moves,
+        "mode": {
+            "kind": mode_kind,
+            "bot_depth": bot_depth,
+            "hints_enabled": False,
+        },
+        "notes": [],
+    }
+
+
 # ---------------------------------------------------------------------------
 # Bot-Engine (Minimax + Alpha-Beta)
 # ---------------------------------------------------------------------------

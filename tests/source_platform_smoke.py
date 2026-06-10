@@ -141,7 +141,7 @@ def main():
         smoke_analyzer()
     finally:
         restore_runtime_files(backups)
-    print("Linux platform smoke passed.")
+    print("Platform smoke passed.")
 
 
 if __name__ == "__main__":
