@@ -2,8 +2,8 @@
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
 
-Terminal-Schach für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Integration.
 Terminal chess for local games, a Minimax bot, Claude API mode, and Claude Code integration.
+Terminal-Schach für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Integration.
 
 ## Screenshot
 

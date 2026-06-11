@@ -1,3 +1,5 @@
+## Last-checked: 2026-06-11
+
 # ChatAndChess
 
 ChatAndChess is a small terminal chess game for local play, a built-in Minimax bot,
@@ -8,7 +10,7 @@ optional Claude API play, and Claude Code file-based worker play.
 - Owner/repo: `entertain-and-more/ChatAndChess`
 - Default branch: `master`
 - Main files: `chess.py`, `chess_analyze.py`
-- Tests: `tests/test_worker_state.py`
+- Tests: `tests/test_worker_state.py`, `tests/source_platform_smoke.py`
 - Runtime worker directory: `chess_comm/` (ignored)
 
 ## Local Checks
@@ -16,6 +18,7 @@ optional Claude API play, and Claude Code file-based worker play.
 ```bash
 python -m unittest discover -s tests -p "test_*.py"
 python -m py_compile chess.py chess_analyze.py
+python tests/source_platform_smoke.py
 ```
 
 ## Boundaries
@@ -23,3 +26,19 @@ python -m py_compile chess.py chess_analyze.py
 - The base game uses the Python standard library.
 - The `anthropic` package is optional and only needed for Claude API mode.
 - Do not commit local API keys, `.env` files, worker JSON, build outputs, or local settings.
+
+## Audience
+
+Primary audiences are Python developers interested in game AI and LLM tool integration,
+Claude Code users exploring chess as a worker subprocess task, terminal game enthusiasts,
+Minimax engine contributors, and researchers comparing classical search with LLM play.
+
+## Search Phrases
+
+```
+"ChatAndChess" "terminal chess" "Python"
+"chess" "Claude API" "Minimax bot" "Python"
+"entertain-and-more/ChatAndChess"
+"chess" "Claude Code" "worker mode"
+"terminal chess game" "AI integration" "open source"
+```

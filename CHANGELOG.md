@@ -17,3 +17,5 @@ All notable changes to ChatAndChess are documented here.
 - Hardened `.gitignore` for build output, local secrets, runtime communication files, and local task files.
 - Preserved castling rights and en-passant state in the Claude-Code worker payload so worker turns do not lose legal move context.
 - Filtered illegal king-capture targets out of generated legal move lists and covered the worker state roundtrip with `tests/test_worker_state.py`.
+- Moved English description before German in README.md (EN-first convention).
+- Standardized `llms.txt`: `Last-checked` header at line 1, `Audience` section added, `Search Phrases` as fenced code block.
