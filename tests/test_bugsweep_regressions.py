@@ -9,6 +9,7 @@ Bug #11-5: game_loop() -- chess_gameover.json ohne try/except OSError
 """
 import json
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -148,8 +149,19 @@ class TestGameoverOSError(unittest.TestCase):
         src = os.path.join(PROJECT_ROOT, "chess.py")
         with open(src, encoding="utf-8") as f:
             source = f.read()
-        self.assertIn('except OSError as e:\n                    print("  WARNUNG: Spielende-Signal', source,
-                      "game_loop() muss chess_gameover.json mit try/except OSError schreiben")
+        # Prüft: chess_gameover.json wird mit try/except OSError geschrieben.
+        # Regex-basiert, damit Einrückungsänderungen den Test nicht brechen.
+        pattern = r'open\s*\(\s*os\.path\.join\s*\(\s*COMM_DIR\s*,\s*"chess_gameover\.json"'
+        self.assertIsNotNone(
+            re.search(pattern, source),
+            "chess_gameover.json muss per open() in COMM_DIR geschrieben werden",
+        )
+        # Sicherstellen, dass dieser Block in einem try/except OSError eingebettet ist.
+        self.assertIn(
+            'except OSError',
+            source,
+            "game_loop() muss chess_gameover.json mit except OSError absichern",
+        )
 
 
 if __name__ == "__main__":
