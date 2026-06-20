@@ -241,10 +241,18 @@ def main():
     i = 0
     while i < len(args):
         if args[i] == "--depth" and i + 1 < len(args):
-            depth = int(args[i + 1])
+            try:
+                depth = int(args[i + 1])
+            except ValueError:
+                print("Fehler: --depth erwartet eine ganze Zahl, nicht '{}'.".format(args[i + 1]))
+                sys.exit(1)
             i += 2
         elif args[i] == "--top" and i + 1 < len(args):
-            top_n = int(args[i + 1])
+            try:
+                top_n = int(args[i + 1])
+            except ValueError:
+                print("Fehler: --top erwartet eine ganze Zahl, nicht '{}'.".format(args[i + 1]))
+                sys.exit(1)
             i += 2
         else:
             move_args.append(args[i])
@@ -256,6 +264,9 @@ def main():
             data = json.load(f)
     except FileNotFoundError:
         print("Fehler: {} nicht gefunden.".format(REQUEST_FILE))
+        sys.exit(1)
+    except (json.JSONDecodeError, OSError) as e:
+        print("Fehler beim Lesen von {}: {}".format(REQUEST_FILE, e))
         sys.exit(1)
 
     move_history = data.get("move_history", [])

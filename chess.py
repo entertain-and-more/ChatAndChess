@@ -1030,8 +1030,7 @@ def choose_game_mode():
 
 
 def ensure_comm_dir():
-    if not os.path.exists(COMM_DIR):
-        os.makedirs(COMM_DIR)
+    os.makedirs(COMM_DIR, exist_ok=True)
     # Alte Dateien aufraeumen
     for f in [REQUEST_FILE, RESPONSE_FILE]:
         if os.path.exists(f):
@@ -1079,8 +1078,13 @@ def write_request(board, white, legal_moves, move_history, check,
         ]
         if settings.get("show_recommendation") and hints:
             data["recommendation"] = hints[0][1]
-    with open(REQUEST_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    try:
+        with open(REQUEST_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return True
+    except OSError as e:
+        print("  FEHLER: Anfrage-Datei konnte nicht geschrieben werden: {}".format(e))
+        return False
 
 
 def build_worker_request_data(board, white, legal_moves, move_history, check,
@@ -1215,8 +1219,11 @@ def claude_code_choose_move(board, white, legal_moves, move_history, check,
                             en_passant_target=None, castling_rights=None):
     """Write the move request and wait for a Claude Code response."""
     legal_input_moves = expand_legal_moves(board, legal_moves)
-    write_request(board, white, legal_moves, move_history, check,
-                  en_passant_target, castling_rights)
+    if not write_request(board, white, legal_moves, move_history, check,
+                         en_passant_target, castling_rights):
+        print("  -> Fallback: Zufälliger Zug (Request-Datei nicht schreibbar)")
+        input("  [Enter]")
+        return random.choice(legal_input_moves)
     print("  Warte auf Claude Code...")
     print("  (Request geschrieben nach: {})".format(COMM_DIR))
 
@@ -1254,8 +1261,7 @@ def run_worker():
     print("Beenden mit Ctrl+C")
     print()
 
-    if not os.path.exists(COMM_DIR):
-        os.makedirs(COMM_DIR)
+    os.makedirs(COMM_DIR, exist_ok=True)
 
     while True:
         try:
@@ -1396,8 +1402,11 @@ def game_loop(mode, player_white=True, bot_depth=3):
                 # Spielende signalisieren
                 end_data = {"board": board, "result": "checkmate" if check else "stalemate",
                             "winner": ("black" if white_turn else "white") if check else "draw"}
-                with open(os.path.join(COMM_DIR, "chess_gameover.json"), "w", encoding="utf-8") as f:
-                    json.dump(end_data, f, ensure_ascii=False)
+                try:
+                    with open(os.path.join(COMM_DIR, "chess_gameover.json"), "w", encoding="utf-8") as f:
+                        json.dump(end_data, f, ensure_ascii=False)
+                except OSError as e:
+                    print("  WARNUNG: Spielende-Signal konnte nicht geschrieben werden: {}".format(e))
             input("\n  [Enter für Menü]")
             return
 
