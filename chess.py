@@ -746,10 +746,27 @@ def board_to_fen(board, white_to_move, castling_rights, en_passant_target,
     return f"{board_fen} {side} {castling_str} {ep_str} {halfmove} {fullmove}"
 
 
+def current_fullmove_number(move_history):
+    """Return the FEN fullmove number for a UCI move history."""
+    return (len(move_history) // 2) + 1
+
+
+def utc_timestamp():
+    """Return a UTC timestamp for portable export files."""
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
 def build_game_export(board, white, castling_rights, en_passant_target,
-                      move_history, mode_kind="local", bot_depth=None):
+                      move_history, mode_kind="local", bot_depth=None,
+                      created_at=None):
     """Return a chatandchess-game-v1.json compatible dict."""
-    fen = board_to_fen(board, white, castling_rights, en_passant_target)
+    fen = board_to_fen(
+        board,
+        white,
+        castling_rights,
+        en_passant_target,
+        fullmove=current_fullmove_number(move_history),
+    )
     castling_str = "".join(f for f in ("K", "Q", "k", "q") if f in castling_rights) or "-"
     ep_str = None
     if en_passant_target is not None:
@@ -762,6 +779,7 @@ def build_game_export(board, white, castling_rights, en_passant_target,
     return {
         "schema": "chatandchess-game-v1",
         "app": "ChatAndChess",
+        "created_at": created_at or utc_timestamp(),
         "position": {
             "fen": fen,
             "side_to_move": "white" if white else "black",
@@ -776,6 +794,43 @@ def build_game_export(board, white, castling_rights, en_passant_target,
         },
         "notes": [],
     }
+
+
+def write_game_export(path, export_data):
+    """Write a portable game export and return the absolute target path."""
+    target = os.path.abspath(os.path.expanduser(path))
+    with open(target, "w", encoding="utf-8") as f:
+        json.dump(export_data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    return target
+
+
+def export_current_game(path, board, white, castling_rights, en_passant_target,
+                        move_history, mode_kind="local", bot_depth=None):
+    """Write the current game state as chatandchess-game-v1.json."""
+    data = build_game_export(
+        board,
+        white,
+        castling_rights,
+        en_passant_target,
+        move_history,
+        mode_kind,
+        bot_depth,
+    )
+    return write_game_export(path, data)
+
+
+def export_initial_game(path):
+    """Write an initial-position export for smoke tests and handoff files."""
+    return export_current_game(
+        path,
+        copy.deepcopy(INITIAL_BOARD),
+        True,
+        {"K", "Q", "k", "q"},
+        None,
+        [],
+        "local",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1427,7 +1482,10 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
         if is_human:
             try:
-                inp = input("  Zug (z.B. e2e4, e7e8q, q=quit): ").strip().lower()
+                raw_input_text = input(
+                    "  Zug (z.B. e2e4, e7e8q, fen, export datei.json, q=quit): "
+                ).strip()
+                inp = raw_input_text.lower()
             except (EOFError, KeyboardInterrupt):
                 print("\n  Spiel beendet.")
                 return
@@ -1435,6 +1493,44 @@ def game_loop(mode, player_white=True, bot_depth=3):
             if inp in ("q", "quit", "exit"):
                 print("  Spiel beendet.")
                 return
+            if inp == "fen":
+                fen = board_to_fen(
+                    board,
+                    white_turn,
+                    castling_rights,
+                    en_passant_target,
+                    fullmove=current_fullmove_number(move_history),
+                )
+                print("  FEN: {}".format(fen))
+                input("  [Enter]")
+                continue
+            if inp == "export":
+                print("  Nutzung: export datei.json")
+                input("  [Enter]")
+                continue
+            if inp.startswith("export "):
+                export_path = raw_input_text.split(None, 1)[1].strip()
+                if not export_path:
+                    print("  Nutzung: export datei.json")
+                    input("  [Enter]")
+                    continue
+                try:
+                    written = export_current_game(
+                        export_path,
+                        board,
+                        white_turn,
+                        castling_rights,
+                        en_passant_target,
+                        move_history,
+                        mode,
+                        bot_depth,
+                    )
+                except OSError as e:
+                    print("  FEHLER: Export konnte nicht geschrieben werden: {}".format(e))
+                else:
+                    print("  Export geschrieben: {}".format(written))
+                input("  [Enter]")
+                continue
 
             if len(inp) < 4:
                 print("  Ungültiges Format! Nutze z.B. e2e4")
@@ -1501,6 +1597,17 @@ def main():
         prompt = generate_session_prompt()
         print(prompt)
         print("\n  Gespeichert unter: {}".format(PROMPT_FILE))
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "--export-initial":
+        if len(sys.argv) < 3:
+            print("  Nutzung: python chess.py --export-initial <datei.json>")
+            sys.exit(2)
+        try:
+            written = export_initial_game(sys.argv[2])
+        except OSError as e:
+            print("  FEHLER: Export konnte nicht geschrieben werden: {}".format(e))
+            sys.exit(1)
+        print("  Export geschrieben: {}".format(written))
         return
 
     while True:

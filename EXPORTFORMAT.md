@@ -1,8 +1,8 @@
 # Exportformat ChatAndChess
 
-Stand: 2026-05-27
+Stand: 2026-06-21
 
-Dieses Dokument beschreibt den geplanten dateibasierten Austausch für Desktop-Plattformen und andere Schachtools. Es ist bewusst ein Planungsdokument; die aktuelle App implementiert dieses Exportformat noch nicht vollständig.
+Dieses Dokument beschreibt den dateibasierten Austausch für Desktop-Plattformen und andere Schachtools. ChatAndChess implementiert aktuell `chatandchess-game-v1.json` mit FEN-Position und UCI-Zugliste; PGN bleibt ein späterer Ausbauschritt.
 
 ## Ziele
 
@@ -43,9 +43,24 @@ Empfohlenes App-eigenes Format für vollständige lokale Partien.
 Regeln:
 
 - `schema` ist Pflicht und bleibt stabil versioniert.
+- `created_at` wird beim Export als UTC-Zeitstempel geschrieben.
 - `moves[].uci` ist Pflicht, weil die aktuelle App UCI-Notation nutzt.
-- `fen` sollte gesetzt werden, sobald FEN-Export implementiert ist.
+- `fen` ist gesetzt und beschreibt die aktuelle Stellung inklusive Zugrecht, Rochaderechten, En-passant-Feld und Fullmove-Zähler.
 - API-Schlüssel, lokale Pfade, Prompts und vollständige Claude-Antworten gehören nicht in dieses Format.
+
+Aktuelle Bedienung:
+
+```bash
+# Initialstellung als Austauschdatei schreiben
+python chess.py --export-initial chatandchess-game-v1.json
+```
+
+Im laufenden Spiel:
+
+```text
+fen
+export partie.json
+```
 
 ### FEN
 

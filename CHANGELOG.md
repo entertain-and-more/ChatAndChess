@@ -4,8 +4,10 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added `fen`, in-game `export <file.json>`, and `python chess.py --export-initial <file.json>` for portable desktop game handoff via `chatandchess-game-v1.json`.
+- Extended the platform smoke to cover JSON export and added `windows-latest` to the Linux/macOS CI matrix.
 - Renamed `tests/linux_platform_smoke.py` → `tests/source_platform_smoke.py` (platform-neutral name).
-- Extended `.github/workflows/tests.yml` with macOS CI: `os` matrix now covers `ubuntu-latest` and `macos-latest`.
+- Extended `.github/workflows/tests.yml` with desktop CI: `os` matrix now covers `ubuntu-latest`, `macos-latest`, and `windows-latest`.
 - Added a GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
 - Updated community workflow actions and first-interaction input names.
 - Added `llms.txt` and linked the local test command from the README.

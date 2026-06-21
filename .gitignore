@@ -34,6 +34,9 @@ releases/
 *.msi
 *.msix
 chess_comm/
+chatandchess-game-v1.json
+chatandchess-game-*.json
+LOCK*.txt
 AUFGABEN.txt
 CLAUDE_PROMPT.txt
 chess_settings.json

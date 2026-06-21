@@ -48,6 +48,9 @@ START_CHESS.bat
 
 # Worker-Modus für Claude Code
 python chess.py --worker
+
+# Austauschformat für Desktop-Plattformen schreiben
+python chess.py --export-initial chatandchess-game-v1.json
 ```
 
 ## Spielweise / How to Play
@@ -58,6 +61,8 @@ Moves use UCI notation: `e2e4` (from-square to-square).
 - Normale Züge: `e2e4`, `g1f3`
 - Rochade: `e1g1` oder `e1c1`
 - Bauernumwandlung: Beim Erreichen der letzten Reihe fragt das Programm nach der Figur.
+- Aktuelle Stellung im Spiel anzeigen: `fen`
+- Aktuellen Spielstand exportieren: `export partie.json`
 
 ## Taktik-Analyzer / Tactics Analyzer
 
@@ -83,6 +88,9 @@ python -m py_compile chess.py chess_analyze.py
 python tests/source_platform_smoke.py
 ```
 
+Der Plattform-Smoke prüft Menüstart, Worker-Boot, Analyzer und den JSON-Export.
+Die GitHub-Actions-Matrix läuft auf Linux, macOS und Windows.
+
 ## Datenschutz / Privacy
 
 ChatAndChess speichert Spiel- und Worker-Laufzeitdaten lokal. API-Schlüssel gehören in die
@@ -98,6 +106,7 @@ Diese lokalen Dateien werden ignoriert / ignored local files:
 - `chess_settings.json`
 - `CLAUDE_PROMPT.txt`
 - `chess_comm/`
+- `chatandchess-game-v1.json` and `chatandchess-game-*.json`
 - `AUFGABEN.txt`, `TEST.txt`, `TESTS.txt`, `TESTERGEBNISSE.txt`
 - build outputs such as `build/`, `dist/`, `*.exe`, `*.msi`, and `*.msix`
 - local database/cache outputs such as `*.db`, `*.sqlite*`, `.pytest_cache/`, and `htmlcov/`
@@ -111,7 +120,7 @@ START_CHESS.bat       Windows launcher
 build_exe.bat         Optional PyInstaller build helper for Windows
 requirements.txt      Base/optional dependency notes
 tests/source_platform_smoke.py
-                     Platform smoke for menu quit, worker boot, and analyzer (Linux + macOS)
+                     Platform smoke for menu quit, worker boot, analyzer, and export
 README/screenshots/   Repository screenshots used by the README
 chess_comm/           Runtime communication directory (gitignored)
 chess_settings.json   Local game settings (gitignored)
@@ -144,4 +153,3 @@ Dieses Projekt ist eine **unentgeltliche Open-Source-Schenkung** im Sinne der §
 Nutzung auf eigenes Risiko. Keine Wartungszusage, keine Verfügbarkeitsgarantie, keine Gewähr für Fehlerfreiheit oder Eignung für einen bestimmten Zweck.
 
 This project is an unpaid open-source donation. Liability is limited to intent and gross negligence (§ 521 German Civil Code). Use at your own risk. No warranty, no maintenance guarantee, no fitness-for-purpose assumed.
-

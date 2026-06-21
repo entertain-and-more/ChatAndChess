@@ -4,6 +4,7 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -133,12 +134,25 @@ def smoke_analyzer():
         raise AssertionError(f"Unexpected analyzer smoke output:\n{result.stdout}\n{result.stderr}")
 
 
+def smoke_export_cli():
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "chatandchess-game-v1.json"
+        result = run_command(["chess.py", "--export-initial", str(target)])
+        assert_result(result, "Initial export smoke")
+        data = json.loads(target.read_text(encoding="utf-8"))
+    if data.get("schema") != "chatandchess-game-v1":
+        raise AssertionError(f"Unexpected export schema: {data!r}")
+    if "fen" not in data.get("position", {}):
+        raise AssertionError(f"Export has no FEN position: {data!r}")
+
+
 def main():
     backups = backup_runtime_files()
     try:
         smoke_menu_quit()
         smoke_worker_boot()
         smoke_analyzer()
+        smoke_export_cli()
     finally:
         restore_runtime_files(backups)
     print("Platform smoke passed.")
