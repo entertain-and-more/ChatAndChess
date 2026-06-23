@@ -883,7 +883,10 @@ def minimax(board, depth, alpha, beta, maximizing, en_passant_target, castling_r
             return -99999 if maximizing else 99999
         return 0
 
-    if depth == 0:
+    if depth <= 0:
+        # FIX: <=0 statt ==0 -> bei negativer Starttiefe (z.B. --depth 0 oder
+        # hint_depth=0 -> Rekursion ab -1) terminiert die Minimax-Suche, sonst
+        # unbegrenzte Rekursion -> RecursionError/Hang.
         return evaluate_board(board)
 
     legal = order_moves(board, legal, white)
@@ -1014,6 +1017,12 @@ def claude_choose_move(board, white, legal_moves, en_passant_target, castling_ri
                 candidate = (fr, fc, tr, tc, promo)
                 if candidate in legal_input_moves:
                     return candidate
+                # FIX: Umwandlung ohne Suffix ("e7e8") -> promo=None nie in
+                # legal_input_moves -> promo 'q' defaulten statt Zufallszug.
+                if promo is None:
+                    promoted = (fr, fc, tr, tc, "q")
+                    if promoted in legal_input_moves:
+                        return promoted
                 print("  Claude schlug ungültigen Zug vor: {}".format(match.group(0)))
 
         print("  -> Fallback: Zufälliger Zug")
@@ -1250,8 +1259,10 @@ def wait_for_response(timeout=300):
                     with open(RESPONSE_FILE, "r", encoding="utf-8") as f:
                         data = json.load(f)
                     os.remove(RESPONSE_FILE)
-                    return data.get("move", "")
-                except (json.JSONDecodeError, FileNotFoundError, OSError):
+                    # FIX: isinstance-Guard -> valides aber nicht-objekt-foermiges JSON
+                    # ([] / "e2e4" / 42) wuerde sonst data.get -> AttributeError -> Crash.
+                    return data.get("move", "") if isinstance(data, dict) else ""
+                except (json.JSONDecodeError, FileNotFoundError, OSError, AttributeError):
                     read_attempts += 1
                     time.sleep(0.5)
             print("\n  FEHLER: Response-Datei konnte nach 3 Versuchen nicht gelesen werden.")
@@ -1298,6 +1309,13 @@ def claude_code_choose_move(board, white, legal_moves, move_history, check,
     parsed = parse_move_text(move_str)
     if parsed and parsed in legal_input_moves:
         return parsed
+    # FIX: Bauernumwandlung ohne Suffix (z.B. "e7e8") -> promo=None ist nie in
+    # legal_input_moves (enthaelt nur 'q/r/b/n'-Varianten) -> wurde als ungueltig
+    # verworfen und durch einen Zufallszug ersetzt. Fehlenden promo auf 'q' defaulten.
+    if parsed and parsed[4] is None:
+        promoted = (parsed[0], parsed[1], parsed[2], parsed[3], "q")
+        if promoted in legal_input_moves:
+            return promoted
 
     print("  Ungültiger Zug von Claude Code: {}".format(move_str))
     print("  -> Fallback: Zufälliger Zug")
@@ -1370,6 +1388,14 @@ def run_worker():
             break
         except Exception as e:
             print("[Worker] Fehler: {}".format(e))
+            # FIX: korrupten/unvollstaendigen Request entfernen (nach .bad umbenennen),
+            # sonst liest der Worker dieselbe Datei in jeder Runde erneut -> Endlos-
+            # Fehlerschleife, die alle spaeteren gueltigen Requests blockiert.
+            try:
+                if os.path.exists(REQUEST_FILE):
+                    os.replace(REQUEST_FILE, REQUEST_FILE + ".bad")
+            except OSError:
+                pass
             time.sleep(2)
 
 

@@ -242,14 +242,14 @@ def main():
     while i < len(args):
         if args[i] == "--depth" and i + 1 < len(args):
             try:
-                depth = int(args[i + 1])
+                depth = max(1, int(args[i + 1]))  # FIX: Untergrenze 1 -> keine Endlos-Rekursion bei <=0
             except ValueError:
                 print("Fehler: --depth erwartet eine ganze Zahl, nicht '{}'.".format(args[i + 1]))
                 sys.exit(1)
             i += 2
         elif args[i] == "--top" and i + 1 < len(args):
             try:
-                top_n = int(args[i + 1])
+                top_n = max(1, int(args[i + 1]))  # FIX: --top 0 ergaebe leere Liste -> faelschlich "keine Zuege"
             except ValueError:
                 print("Fehler: --top erwartet eine ganze Zahl, nicht '{}'.".format(args[i + 1]))
                 sys.exit(1)
