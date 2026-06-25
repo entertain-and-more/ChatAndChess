@@ -4,6 +4,7 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Hardened analyzer history replay and Claude-Code worker request parsing so malformed history or partial request payloads fail without turn-state drift or bare `KeyError`.
 - Added `fen`, in-game `export <file.json>`, and `python chess.py --export-initial <file.json>` for portable desktop game handoff via `chatandchess-game-v1.json`.
 - Extended the platform smoke to cover JSON export and added `windows-latest` to the Linux/macOS CI matrix.
 - Renamed `tests/linux_platform_smoke.py` → `tests/source_platform_smoke.py` (platform-neutral name).

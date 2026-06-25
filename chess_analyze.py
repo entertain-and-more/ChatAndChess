@@ -90,9 +90,14 @@ def replay_history(move_history):
     ep_target = None
     castling_rights = {"K", "Q", "k", "q"}
     for uci in move_history:
-        new_board, ep_target, castling_rights = apply_uci(board, uci, ep_target, castling_rights)
-        if new_board:
-            board = new_board
+        new_board, new_ep_target, new_castling_rights = apply_uci(
+            board, uci, ep_target, castling_rights
+        )
+        if not new_board:
+            continue
+        board = new_board
+        ep_target = new_ep_target
+        castling_rights = new_castling_rights
         white_turn = not white_turn
     return board, white_turn, ep_target, castling_rights
 

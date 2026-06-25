@@ -105,6 +105,41 @@ class WorkerStateTests(unittest.TestCase):
 
         self.assertEqual(new_board[0][0], "N")
 
+    def test_analyzer_replay_history_skips_invalid_entries_without_turn_flip(self):
+        board, white_turn, _, _ = chess_analyze.replay_history(["not-a-move"])
+
+        self.assertEqual(board, chess.INITIAL_BOARD)
+        self.assertTrue(white_turn)
+
+    def test_load_worker_state_reports_missing_required_field(self):
+        data = chess.build_worker_request_data(
+            copy.deepcopy(chess.INITIAL_BOARD),
+            True,
+            [],
+            [],
+            False,
+        )
+        del data["white_turn"]
+
+        with self.assertRaisesRegex(ValueError, "white_turn"):
+            chess.load_worker_state(data)
+
+    def test_load_worker_state_rejects_invalid_payload_shapes(self):
+        with self.assertRaisesRegex(ValueError, "JSON object"):
+            chess.load_worker_state([])
+
+        data = chess.build_worker_request_data(
+            copy.deepcopy(chess.INITIAL_BOARD),
+            True,
+            [],
+            [],
+            False,
+        )
+        data["legal_moves"] = "e2e4"
+
+        with self.assertRaisesRegex(ValueError, "legal_moves"):
+            chess.load_worker_state(data)
+
     def test_uci_to_coords_returns_none_on_invalid_rank_digit(self):
         """Regression: uci_to_coords must not raise ValueError for bad rank chars.
         Before the fix, int(uci[1]) on non-digit input propagated uncaught,

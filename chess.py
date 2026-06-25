@@ -1209,13 +1209,48 @@ def infer_en_passant_target_from_history(board, history):
     return en_passant_target
 
 
+def _require_worker_field(data, name):
+    if name not in data:
+        raise ValueError("Worker request missing required field: {}".format(name))
+    return data.get(name)
+
+
+def _validate_worker_board(board):
+    pieces = set(".KQRBNPkqrbnp")
+    if not isinstance(board, list) or len(board) != 8:
+        raise ValueError("Worker request field 'board' must be an 8x8 list")
+    for row in board:
+        if not isinstance(row, list) or len(row) != 8:
+            raise ValueError("Worker request field 'board' must be an 8x8 list")
+        for piece in row:
+            if not isinstance(piece, str) or piece not in pieces:
+                raise ValueError("Worker request field 'board' contains invalid pieces")
+    return board
+
+
+def _validate_worker_string_list(name, value):
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ValueError("Worker request field '{}' must be a list of strings".format(name))
+    return value
+
+
 def load_worker_state(data):
     """Parse a Claude-Code request payload into typed worker state."""
-    board = data["board"]
-    white = data["white_turn"]
-    legal_strs = data["legal_moves"]
+    if not isinstance(data, dict):
+        raise ValueError("Worker request must be a JSON object")
+
+    board = _validate_worker_board(_require_worker_field(data, "board"))
+    white = _require_worker_field(data, "white_turn")
+    if not isinstance(white, bool):
+        raise ValueError("Worker request field 'white_turn' must be a boolean")
+
+    legal_strs = _validate_worker_string_list(
+        "legal_moves", _require_worker_field(data, "legal_moves")
+    )
     check = data.get("check", False)
-    history = data.get("move_history", [])
+    if not isinstance(check, bool):
+        raise ValueError("Worker request field 'check' must be a boolean")
+    history = _validate_worker_string_list("move_history", data.get("move_history", []))
 
     legal_moves = []
     for ms in legal_strs:
@@ -1231,6 +1266,12 @@ def load_worker_state(data):
 
     en_passant_raw = data.get("en_passant_target")
     if en_passant_raw is not None:
+        if (
+            not isinstance(en_passant_raw, (list, tuple))
+            or len(en_passant_raw) != 2
+            or not all(isinstance(value, int) for value in en_passant_raw)
+        ):
+            raise ValueError("Worker request field 'en_passant_target' must be a pair")
         en_passant_target = tuple(en_passant_raw)
     else:
         en_passant_target = infer_en_passant_target_from_history(board, history)
