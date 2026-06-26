@@ -103,5 +103,55 @@ class GameExportTests(unittest.TestCase):
         )
 
 
+class PgnExportTests(unittest.TestCase):
+    def test_pgn_opening_uses_san_and_result_marker(self):
+        pgn = chess.build_pgn_export(
+            ["e2e4", "e7e5", "g1f3"],
+            date="2026.06.26",
+        )
+        self.assertIn('[Event "ChatAndChess Game"]', pgn)
+        self.assertIn('[Date "2026.06.26"]', pgn)
+        self.assertIn("1. e4 e5 2. Nf3 *", pgn)
+
+    def test_pgn_detects_checkmate_result(self):
+        pgn = chess.build_pgn_export(
+            ["f2f3", "e7e5", "g2g4", "d8h4"],
+            date="2026.06.26",
+        )
+        self.assertIn('[Result "0-1"]', pgn)
+        self.assertIn("1. f3 e5 2. g4 Qh4# 0-1", pgn)
+
+    def test_pgn_castling_notation(self):
+        pgn = chess.build_pgn_export(
+            ["e2e4", "e7e5", "g1f3", "b8c6", "f1e2", "g8f6", "e1g1"],
+            date="2026.06.26",
+        )
+        self.assertIn("4. O-O *", pgn)
+
+    def test_export_pgn_cli_writes_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "game.pgn"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "chess.py",
+                    "--export-pgn",
+                    str(target),
+                    "e2e4",
+                    "e7e5",
+                    "g1f3",
+                ],
+                cwd=PROJECT_ROOT,
+                text=True,
+                capture_output=True,
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("PGN geschrieben", result.stdout)
+            text = target.read_text(encoding="utf-8")
+        self.assertIn('[App "ChatAndChess"]', text)
+        self.assertIn("1. e4 e5 2. Nf3 *", text)
+
+
 if __name__ == "__main__":
     unittest.main()

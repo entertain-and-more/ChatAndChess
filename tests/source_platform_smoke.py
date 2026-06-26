@@ -146,6 +146,16 @@ def smoke_export_cli():
         raise AssertionError(f"Export has no FEN position: {data!r}")
 
 
+def smoke_pgn_export_cli():
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "chatandchess-game.pgn"
+        result = run_command(["chess.py", "--export-pgn", str(target), "e2e4", "e7e5", "g1f3"])
+        assert_result(result, "PGN export smoke")
+        text = target.read_text(encoding="utf-8")
+    if '[App "ChatAndChess"]' not in text or "1. e4 e5 2. Nf3 *" not in text:
+        raise AssertionError(f"Unexpected PGN export:\n{text}")
+
+
 def main():
     backups = backup_runtime_files()
     try:
@@ -153,6 +163,7 @@ def main():
         smoke_worker_boot()
         smoke_analyzer()
         smoke_export_cli()
+        smoke_pgn_export_cli()
     finally:
         restore_runtime_files(backups)
     print("Platform smoke passed.")

@@ -756,6 +756,213 @@ def utc_timestamp():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
+def pgn_date(value=None):
+    """Return a PGN date string in UTC."""
+    if value is None:
+        return time.strftime("%Y.%m.%d", time.gmtime())
+    return value
+
+
+def _square_name(row, col):
+    return chr(ord("a") + col) + str(8 - row)
+
+
+def _piece_letter(piece):
+    piece_type = piece.upper()
+    return "" if piece_type == "P" else piece_type
+
+
+def _is_en_passant_capture(board, fr, fc, tr, tc, en_passant_target):
+    piece = board[fr][fc]
+    return (
+        piece != "."
+        and piece.upper() == "P"
+        and fc != tc
+        and board[tr][tc] == "."
+        and en_passant_target == (tr, tc)
+    )
+
+
+def _normalize_history_move(board, legal_moves, move_text):
+    parsed = parse_move_text(move_text)
+    if parsed is None:
+        raise ValueError("Invalid move in history: {}".format(move_text))
+    fr, fc, tr, tc, promo = parsed
+    if is_promotion_move(board, fr, fc, tr) and promo is None:
+        promo = "q"
+        parsed = (fr, fc, tr, tc, promo)
+    if parsed not in legal_moves:
+        raise ValueError("Illegal move in history: {}".format(move_text))
+    return parsed
+
+
+def _san_disambiguation(board, legal_moves, fr, fc, tr, tc):
+    piece = board[fr][fc]
+    if piece.upper() == "P":
+        return ""
+    conflicts = []
+    for move in legal_moves:
+        ofr, ofc, otr, otc, _ = move
+        if (ofr, ofc) == (fr, fc):
+            continue
+        if (otr, otc) != (tr, tc):
+            continue
+        other = board[ofr][ofc]
+        if other != "." and other.upper() == piece.upper() and is_white(other) == is_white(piece):
+            conflicts.append((ofr, ofc))
+    if not conflicts:
+        return ""
+    same_file = any(ofc == fc for _, ofc in conflicts)
+    same_rank = any(ofr == fr for ofr, _ in conflicts)
+    if not same_file:
+        return chr(ord("a") + fc)
+    if not same_rank:
+        return str(8 - fr)
+    return _square_name(fr, fc)
+
+
+def move_to_san(board, white, castling_rights, en_passant_target, move):
+    """Return standard algebraic notation for a legal move tuple."""
+    fr, fc, tr, tc, promo = move
+    piece = board[fr][fc]
+    legal_moves = expand_legal_moves(
+        board,
+        get_legal_moves(board, white, en_passant_target, castling_rights),
+    )
+
+    if piece.upper() == "K" and abs(tc - fc) == 2:
+        san = "O-O" if tc > fc else "O-O-O"
+    else:
+        target = board[tr][tc]
+        capture = target != "." or _is_en_passant_capture(
+            board, fr, fc, tr, tc, en_passant_target
+        )
+        san = _piece_letter(piece)
+        san += _san_disambiguation(board, legal_moves, fr, fc, tr, tc)
+        if piece.upper() == "P" and capture:
+            san += chr(ord("a") + fc)
+        if capture:
+            san += "x"
+        san += _square_name(tr, tc)
+        if promo:
+            san += "=" + promo.upper()
+
+    new_en_passant = None
+    if piece.upper() == "P" and abs(fr - tr) == 2:
+        new_en_passant = ((fr + tr) // 2, fc)
+    new_castling_rights = set(castling_rights)
+    update_castling_rights(new_castling_rights, piece, fr, fc, tr, tc)
+    new_board = make_move(board, fr, fc, tr, tc, en_passant_target, promo)
+    opponent_in_check = in_check(new_board, not white)
+    opponent_legal = get_legal_moves(new_board, not white, new_en_passant, new_castling_rights)
+    if opponent_in_check:
+        san += "#" if not opponent_legal else "+"
+    return san
+
+
+def apply_history_move(board, white, castling_rights, en_passant_target, move_text):
+    """Apply one UCI move from a portable history and return updated state."""
+    legal_moves = expand_legal_moves(
+        board,
+        get_legal_moves(board, white, en_passant_target, castling_rights),
+    )
+    fr, fc, tr, tc, promo = _normalize_history_move(board, legal_moves, move_text)
+    piece = board[fr][fc]
+    new_en_passant = None
+    if piece.upper() == "P" and abs(fr - tr) == 2:
+        new_en_passant = ((fr + tr) // 2, fc)
+    new_castling_rights = set(castling_rights)
+    update_castling_rights(new_castling_rights, piece, fr, fc, tr, tc)
+    new_board = make_move(board, fr, fc, tr, tc, en_passant_target, promo)
+    return new_board, not white, new_castling_rights, new_en_passant, (fr, fc, tr, tc, promo)
+
+
+def build_san_history(move_history):
+    """Replay UCI history and return SAN moves plus the final game state."""
+    board = copy.deepcopy(INITIAL_BOARD)
+    white = True
+    castling_rights = {"K", "Q", "k", "q"}
+    en_passant_target = None
+    san_moves = []
+
+    for move_text in move_history:
+        legal_moves = expand_legal_moves(
+            board,
+            get_legal_moves(board, white, en_passant_target, castling_rights),
+        )
+        move = _normalize_history_move(board, legal_moves, move_text)
+        san_moves.append(move_to_san(board, white, castling_rights, en_passant_target, move))
+        board, white, castling_rights, en_passant_target, _ = apply_history_move(
+            board, white, castling_rights, en_passant_target, move_to_uci(*move)
+        )
+
+    return san_moves, board, white, castling_rights, en_passant_target
+
+
+def detect_game_result(board, white, castling_rights, en_passant_target):
+    """Return PGN result marker for the current final position."""
+    legal = get_legal_moves(board, white, en_passant_target, castling_rights)
+    if legal:
+        return "*"
+    if in_check(board, white):
+        return "0-1" if white else "1-0"
+    return "1/2-1/2"
+
+
+def wrap_pgn_tokens(tokens, width=80):
+    lines = []
+    current = ""
+    for token in tokens:
+        if not current:
+            current = token
+        elif len(current) + 1 + len(token) <= width:
+            current += " " + token
+        else:
+            lines.append(current)
+            current = token
+    if current:
+        lines.append(current)
+    return "\n".join(lines)
+
+
+def build_pgn_export(move_history, event="ChatAndChess Game", site="Local",
+                     date=None, result=None):
+    """Return a dependency-free PGN export for a UCI move history."""
+    san_moves, board, white, castling_rights, en_passant_target = build_san_history(move_history)
+    result = result or detect_game_result(board, white, castling_rights, en_passant_target)
+    headers = [
+        ("Event", event),
+        ("Site", site),
+        ("Date", pgn_date(date)),
+        ("Round", "-"),
+        ("White", "White"),
+        ("Black", "Black"),
+        ("Result", result),
+        ("App", "ChatAndChess"),
+    ]
+    tokens = []
+    for idx in range(0, len(san_moves), 2):
+        tokens.append("{}. {}".format((idx // 2) + 1, san_moves[idx]))
+        if idx + 1 < len(san_moves):
+            tokens.append(san_moves[idx + 1])
+    tokens.append(result)
+    header_text = "\n".join('[{} "{}"]'.format(key, value) for key, value in headers)
+    return header_text + "\n\n" + wrap_pgn_tokens(tokens) + "\n"
+
+
+def write_pgn_export(path, pgn_text):
+    """Write PGN text and return the absolute target path."""
+    target = os.path.abspath(os.path.expanduser(path))
+    with open(target, "w", encoding="utf-8") as f:
+        f.write(pgn_text)
+    return target
+
+
+def export_current_pgn(path, move_history, result=None):
+    """Write a PGN file for the current move history."""
+    return write_pgn_export(path, build_pgn_export(move_history, result=result))
+
+
 def build_game_export(board, white, castling_rights, en_passant_target,
                       move_history, mode_kind="local", bot_depth=None,
                       created_at=None):
@@ -1550,7 +1757,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
         if is_human:
             try:
                 raw_input_text = input(
-                    "  Zug (z.B. e2e4, e7e8q, fen, export datei.json, q=quit): "
+                    "  Zug (e2e4, fen, export datei.json, pgn datei.pgn, q=quit): "
                 ).strip()
                 inp = raw_input_text.lower()
             except (EOFError, KeyboardInterrupt):
@@ -1596,6 +1803,24 @@ def game_loop(mode, player_white=True, bot_depth=3):
                     print("  FEHLER: Export konnte nicht geschrieben werden: {}".format(e))
                 else:
                     print("  Export geschrieben: {}".format(written))
+                input("  [Enter]")
+                continue
+            if inp == "pgn":
+                print("  Nutzung: pgn datei.pgn")
+                input("  [Enter]")
+                continue
+            if inp.startswith("pgn "):
+                export_path = raw_input_text.split(None, 1)[1].strip()
+                if not export_path:
+                    print("  Nutzung: pgn datei.pgn")
+                    input("  [Enter]")
+                    continue
+                try:
+                    written = export_current_pgn(export_path, move_history)
+                except (OSError, ValueError) as e:
+                    print("  FEHLER: PGN-Export konnte nicht geschrieben werden: {}".format(e))
+                else:
+                    print("  PGN geschrieben: {}".format(written))
                 input("  [Enter]")
                 continue
 
@@ -1675,6 +1900,17 @@ def main():
             print("  FEHLER: Export konnte nicht geschrieben werden: {}".format(e))
             sys.exit(1)
         print("  Export geschrieben: {}".format(written))
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "--export-pgn":
+        if len(sys.argv) < 3:
+            print("  Nutzung: python chess.py --export-pgn <datei.pgn> [UCI-Züge...]")
+            sys.exit(2)
+        try:
+            written = export_current_pgn(sys.argv[2], sys.argv[3:])
+        except (OSError, ValueError) as e:
+            print("  FEHLER: PGN-Export konnte nicht geschrieben werden: {}".format(e))
+            sys.exit(1)
+        print("  PGN geschrieben: {}".format(written))
         return
 
     while True:

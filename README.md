@@ -51,6 +51,9 @@ python chess.py --worker
 
 # Austauschformat für Desktop-Plattformen schreiben
 python chess.py --export-initial chatandchess-game-v1.json
+
+# PGN für Standard-Schachtools schreiben
+python chess.py --export-pgn partie.pgn e2e4 e7e5 g1f3
 ```
 
 ## Spielweise / How to Play
@@ -63,6 +66,7 @@ Moves use UCI notation: `e2e4` (from-square to-square).
 - Bauernumwandlung: Beim Erreichen der letzten Reihe fragt das Programm nach der Figur.
 - Aktuelle Stellung im Spiel anzeigen: `fen`
 - Aktuellen Spielstand exportieren: `export partie.json`
+- Aktuelle Zugliste als PGN exportieren: `pgn partie.pgn`
 
 ## Taktik-Analyzer / Tactics Analyzer
 
@@ -88,7 +92,7 @@ python -m py_compile chess.py chess_analyze.py
 python tests/source_platform_smoke.py
 ```
 
-Der Plattform-Smoke prüft Menüstart, Worker-Boot, Analyzer und den JSON-Export.
+Der Plattform-Smoke prüft Menüstart, Worker-Boot, Analyzer, JSON-Export und PGN-Export.
 Die GitHub-Actions-Matrix läuft auf Linux, macOS und Windows.
 
 ## Datenschutz / Privacy

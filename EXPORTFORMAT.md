@@ -1,8 +1,8 @@
 # Exportformat ChatAndChess
 
-Stand: 2026-06-21
+Stand: 2026-06-26
 
-Dieses Dokument beschreibt den dateibasierten Austausch für Desktop-Plattformen und andere Schachtools. ChatAndChess implementiert aktuell `chatandchess-game-v1.json` mit FEN-Position und UCI-Zugliste; PGN bleibt ein späterer Ausbauschritt.
+Dieses Dokument beschreibt den dateibasierten Austausch für Desktop-Plattformen und andere Schachtools. ChatAndChess implementiert `chatandchess-game-v1.json` mit FEN-Position und UCI-Zugliste sowie PGN für den Standardaustausch mit Schachsoftware.
 
 ## Ziele
 
@@ -68,7 +68,21 @@ Für einzelne Stellungen ist FEN das bevorzugte Minimalformat. Es eignet sich f�
 
 ### PGN
 
-PGN ist das bevorzugte Standardformat für abgeschlossene Partien. Sobald ChatAndChess PGN schreibt, sollte PGN für allgemeine Schachsoftware und `chatandchess-game-v1.json` für App-spezifische Metadaten parallel angeboten werden.
+PGN ist das bevorzugte Standardformat für abgeschlossene Partien und für andere Schachtools. ChatAndChess erzeugt SAN-Zugnotation aus der UCI-Historie, erkennt Matt/Patt-Ergebnisse aus der Endstellung und schreibt UTF-8-PGN ohne externe Abhängigkeiten. Für laufende Partien bleibt das Ergebnis `*`.
+
+Nicht-interaktiv:
+
+```bash
+python chess.py --export-pgn partie.pgn e2e4 e7e5 g1f3
+```
+
+Im laufenden Spiel:
+
+```text
+pgn partie.pgn
+```
+
+PGN enthält keine Claude-Code-Workerdateien, lokalen Pfade oder API-Schlüssel. App-spezifische Metadaten bleiben im JSON-Format.
 
 ## Plattformbezug
 

@@ -4,6 +4,9 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added dependency-free PGN export via in-game `pgn <file.pgn>` and
+  `python chess.py --export-pgn <file.pgn> [uci moves...]`, including SAN,
+  castling notation, and mate/stalemate result detection.
 - Hardened analyzer history replay and Claude-Code worker request parsing so malformed history or partial request payloads fail without turn-state drift or bare `KeyError`.
 - Added `fen`, in-game `export <file.json>`, and `python chess.py --export-initial <file.json>` for portable desktop game handoff via `chatandchess-game-v1.json`.
 - Extended the platform smoke to cover JSON export and added `windows-latest` to the Linux/macOS CI matrix.
