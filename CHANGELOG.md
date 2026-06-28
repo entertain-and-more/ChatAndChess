@@ -4,6 +4,12 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added 12 behavioral regression tests for special-move rule combinations
+  (`tests/test_bugsweep_spezialzuege_20260628.py`): en-passant discovered
+  check, castling from/through/into check, castling-right loss after rook move
+  and return, underpromotion to knight and rook, default promotion to queen,
+  and correct stalemate vs. checkmate detection. Full suite: 48/48 tests green.
+
 - Added dependency-free PGN export via in-game `pgn <file.pgn>` and
   `python chess.py --export-pgn <file.pgn> [uci moves...]`, including SAN,
   castling notation, and mate/stalemate result detection.
