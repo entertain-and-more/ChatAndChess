@@ -56,6 +56,12 @@ python chess.py --export-initial chatandchess-game-v1.json
 python chess.py --export-pgn partie.pgn e2e4 e7e5 g1f3
 ```
 
+## Plattform-Scope / Platform Scope
+
+ChatAndChess bleibt ein Desktop-/CLI-Projekt für Windows, macOS und Linux.
+Web/PWA, Android und iOS sind keine Portierungsziele; ein grafisches
+Browser- oder Mobile-Schachspiel wäre ein eigenes Produkt.
+
 ## Spielweise / How to Play
 
 Züge werden in UCI-Notation eingegeben: `e2e4` (Startfeld zu Zielfeld).

@@ -4,6 +4,10 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Documented the platform scope in README and added a guard test ensuring
+  ChatAndChess stays a desktop/CLI project with no Web/PWA, Android, or iOS
+  scaffold unless that product decision is changed deliberately.
+
 - Added 12 behavioral regression tests for special-move rule combinations
   (`tests/test_bugsweep_spezialzuege_20260628.py`): en-passant discovered
   check, castling from/through/into check, castling-right loss after rook move
