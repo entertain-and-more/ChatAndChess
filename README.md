@@ -140,6 +140,10 @@ chess_settings.json   Local game settings (gitignored)
 
 [MIT](LICENSE)
 
+Drittanbieter-Lizenzen / third-party licenses: [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt).
+Das Basisspiel nutzt nur die Python-Standardbibliothek; das Inventar dokumentiert
+den optionalen `anthropic`-Stack für den Claude-API-Modus.
+
 ## Community Docs
 
 - [Contributing](CONTRIBUTING.md)

@@ -4,6 +4,10 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added `THIRD_PARTY_LICENSES.txt` for the optional `anthropic` Claude API
+  dependency stack and a guard test that keeps the inventory tied to
+  `requirements.txt`.
+
 - Documented the platform scope in README and added a guard test ensuring
   ChatAndChess stays a desktop/CLI project with no Web/PWA, Android, or iOS
   scaffold unless that product decision is changed deliberately.

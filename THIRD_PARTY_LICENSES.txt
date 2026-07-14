@@ -1,0 +1,63 @@
+THIRD-PARTY LICENSES
+====================
+
+Project: ChatAndChess
+Audit date: 2026-07-14
+Scope: optional Python dependency stack from requirements.txt
+
+Summary
+-------
+
+The ChatAndChess base game uses only the Python standard library. The only
+declared external dependency is optional:
+
+- anthropic>=0.40.0, used only for Claude API mode in chess.py.
+
+This file is a direct dependency inventory for the optional Claude API stack,
+not a complete lockfile or SBOM. Versions below are the resolved versions
+observed on 2026-07-14 with:
+
+- python -m pip install --dry-run -r requirements.txt
+- local importlib.metadata / PyPI metadata checks
+- OSV query for anthropic 0.40.0 and the listed resolved versions
+
+OSV result on 2026-07-14: no advisories were returned for anthropic 0.40.0 or
+for the resolved package versions listed below.
+
+Direct Dependency
+-----------------
+
+| Package | Audited version | Relationship | License | Source |
+|---|---:|---|---|---|
+| anthropic | 0.109.2 | Direct optional dependency for Claude API mode | MIT | https://github.com/anthropics/anthropic-sdk-python |
+
+Resolved Transitive Dependencies
+--------------------------------
+
+| Package | Audited version | Relationship | License | Source |
+|---|---:|---|---|---|
+| annotated-types | 0.7.0 | Transitive via pydantic | MIT | https://github.com/annotated-types/annotated-types |
+| anyio | 4.13.0 | Transitive via anthropic | MIT | https://github.com/agronholm/anyio |
+| certifi | 2026.5.20 | Transitive via httpx | MPL-2.0 | https://github.com/certifi/python-certifi |
+| distro | 1.9.0 | Transitive via anthropic | Apache-2.0 | https://github.com/python-distro/distro |
+| docstring-parser | 0.18.0 | Transitive via anthropic | MIT | https://github.com/rr-/docstring_parser |
+| h11 | 0.16.0 | Transitive via httpcore | MIT | https://github.com/python-hyper/h11 |
+| httpcore | 1.0.9 | Transitive via httpx | BSD-3-Clause | https://github.com/encode/httpcore |
+| httpx | 0.28.1 | Transitive via anthropic | BSD-3-Clause | https://github.com/encode/httpx |
+| idna | 3.18 | Transitive via anyio/httpx | BSD-3-Clause | https://github.com/kjd/idna |
+| jiter | 0.15.0 | Transitive via anthropic | MIT | https://github.com/pydantic/jiter |
+| pydantic | 2.13.4 | Transitive via anthropic | MIT | https://github.com/pydantic/pydantic |
+| pydantic-core | 2.46.4 | Transitive via pydantic | MIT | https://github.com/pydantic/pydantic/tree/main/pydantic-core |
+| sniffio | 1.3.1 | Transitive via anthropic/anyio | MIT OR Apache-2.0 | https://github.com/python-trio/sniffio |
+| typing-extensions | 4.15.0 | Transitive via anthropic/pydantic | PSF-2.0 | https://github.com/python/typing_extensions |
+| typing-inspection | 0.4.2 | Transitive via pydantic | MIT | https://github.com/pydantic/typing-inspection |
+
+License Notes
+-------------
+
+- ChatAndChess itself is licensed under MIT; see LICENSE.
+- The optional dependency stack listed here is compatible with MIT distribution
+  based on the metadata reviewed on 2026-07-14.
+- certifi carries MPL-2.0 terms for the bundled Mozilla CA certificate data.
+- Future resolver output may differ because requirements.txt intentionally keeps
+  anthropic as a minimum-version dependency rather than a pinned lockfile.
