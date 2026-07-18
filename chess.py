@@ -104,6 +104,13 @@ PIECE_NAMES_DE = {
     "B": "Läufer", "N": "Springer", "P": "Bauer",
 }
 
+PIECE_COLOR_DE = {
+    "K": "weißer", "Q": "weiße", "R": "weißer",
+    "B": "weißer", "N": "weißer", "P": "weißer",
+    "k": "schwarzer", "q": "schwarze", "r": "schwarzer",
+    "b": "schwarzer", "n": "schwarzer", "p": "schwarzer",
+}
+
 PROMOTION_CHOICES = ("q", "r", "b", "n")
 
 
@@ -274,6 +281,39 @@ def can_capture_target(piece, target):
 
 def pos_to_str(row, col):
     return chr(ord("a") + col) + str(8 - row)
+
+
+def describe_piece_de(piece):
+    """Return a screenreader-friendly German piece description."""
+    name = PIECE_NAMES_DE.get(piece.upper(), piece)
+    color = PIECE_COLOR_DE.get(piece, "")
+    return "{} {}".format(color, name).strip()
+
+
+def text_board_lines(board):
+    """Return the current position as rank-by-rank text."""
+    lines = []
+    for r in range(8):
+        row_num = 8 - r
+        entries = []
+        for c in range(8):
+            piece = board[r][c]
+            if piece != ".":
+                entries.append("{} {}".format(pos_to_str(r, c), describe_piece_de(piece)))
+        if entries:
+            lines.append("Reihe {}: {}".format(row_num, ", ".join(entries)))
+        else:
+            lines.append("Reihe {}: leer".format(row_num))
+    return lines
+
+
+def print_text_board(board):
+    """Print a text-only board alternative for screenreaders and logs."""
+    print()
+    print("  Textbrett (für Screenreader):")
+    for line in text_board_lines(board):
+        print("  {}".format(line))
+    print()
 
 
 def render(board, white_turn, last_move=None, check=False, mode_info=""):
@@ -1757,7 +1797,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
         if is_human:
             try:
                 raw_input_text = input(
-                    "  Zug (e2e4, fen, export datei.json, pgn datei.pgn, q=quit): "
+                    "  Zug (e2e4, board=Textbrett, fen, export datei.json, pgn datei.pgn, q=quit): "
                 ).strip()
                 inp = raw_input_text.lower()
             except (EOFError, KeyboardInterrupt):
@@ -1767,6 +1807,10 @@ def game_loop(mode, player_white=True, bot_depth=3):
             if inp in ("q", "quit", "exit"):
                 print("  Spiel beendet.")
                 return
+            if inp in ("board", "brett", "textbrett"):
+                print_text_board(board)
+                input("  [Enter]")
+                continue
             if inp == "fen":
                 fen = board_to_fen(
                     board,

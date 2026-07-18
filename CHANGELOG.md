@@ -4,6 +4,10 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added an in-game text board command (`board`, `brett`, `textbrett`) that
+  lists every rank with field names and German piece names, so screenreader
+  users and terminal logs have a text alternative to the Unicode board.
+
 - Added `THIRD_PARTY_LICENSES.txt` for the optional `anthropic` Claude API
   dependency stack and a guard test that keeps the inventory tied to
   `requirements.txt`.

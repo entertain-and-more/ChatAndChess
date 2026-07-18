@@ -71,6 +71,7 @@ Moves use UCI notation: `e2e4` (from-square to-square).
 - Rochade: `e1g1` oder `e1c1`
 - Bauernumwandlung: Beim Erreichen der letzten Reihe fragt das Programm nach der Figur.
 - Aktuelle Stellung im Spiel anzeigen: `fen`
+- Textbasierte Brettansicht für Screenreader und Logs anzeigen: `board`, `brett` oder `textbrett`
 - Aktuellen Spielstand exportieren: `export partie.json`
 - Aktuelle Zugliste als PGN exportieren: `pgn partie.pgn`
 
