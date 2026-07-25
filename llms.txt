@@ -1,17 +1,23 @@
-## Last-checked: 2026-06-11
+## Last-checked: 2026-07-25
 
 # ChatAndChess
 
-ChatAndChess is a small terminal chess game for local play, a built-in Minimax bot,
-optional Claude API play, and Claude Code file-based worker play.
+ChatAndChess is a local-first Python terminal chess application featuring multiple game modes: local 2-player hotseat, a built-in Minimax engine bot with adjustable search depth, optional Anthropic Claude API play, and file-based Claude Code worker process integration.
 
 ## Repository
 
 - Owner/repo: `entertain-and-more/ChatAndChess`
 - Default branch: `master`
-- Main files: `chess.py`, `chess_analyze.py`
+- Main files: `chess.py` (core game, rules engine, Minimax bot, Worker interface), `chess_analyze.py` (tactics analyzer)
 - Tests: `tests/test_worker_state.py`, `tests/source_platform_smoke.py`
-- Runtime worker directory: `chess_comm/` (ignored)
+- Runtime worker directory: `chess_comm/` (gitignored)
+
+## Core Capabilities
+
+- **Game Modes**: 2 Player (local hotseat), vs Bot (Minimax search depth 1–5), vs Claude API (Anthropic API), vs Claude Code (file-based IPC worker via JSON payload).
+- **Rules Compliance**: Castling (short/long), En Passant, Pawn Promotion, Check, Checkmate, Stalemate, legal move filtering.
+- **Engine Hints**: Both sides, AI only, Player only, or Off.
+- **Tactics Analyzer**: Standalone evaluation tool (`chess_analyze.py`) with candidate moves, position score, and move sequence analysis.
 
 ## Local Checks
 
@@ -21,17 +27,16 @@ python -m py_compile chess.py chess_analyze.py
 python tests/source_platform_smoke.py
 ```
 
-## Boundaries
+## Boundaries & Security
 
-- The base game uses the Python standard library.
-- The `anthropic` package is optional and only needed for Claude API mode.
-- Do not commit local API keys, `.env` files, worker JSON, build outputs, or local settings.
+- Base game relies solely on the Python Standard Library (zero mandatory external dependencies).
+- Optional `anthropic` package for direct API mode.
+- Local secrets, `.env` files, API keys, worker payload JSON, build outputs (`dist/`, `build/`, `*.exe`) are strictly gitignored.
+- Liability is limited to intent and gross negligence (§ 521 BGB).
 
 ## Audience
 
-Primary audiences are Python developers interested in game AI and LLM tool integration,
-Claude Code users exploring chess as a worker subprocess task, terminal game enthusiasts,
-Minimax engine contributors, and researchers comparing classical search with LLM play.
+Primary audiences are Python developers interested in game AI and LLM tool integration, Claude Code users exploring chess as a worker subprocess task, terminal game enthusiasts, Minimax engine contributors, and researchers comparing classical search with LLM play.
 
 ## Search Phrases
 
@@ -41,4 +46,5 @@ Minimax engine contributors, and researchers comparing classical search with LLM
 "entertain-and-more/ChatAndChess"
 "chess" "Claude Code" "worker mode"
 "terminal chess game" "AI integration" "open source"
+"python terminal chess" "minimax chess engine" "claude worker chess"
 ```

@@ -4,6 +4,14 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Added `pyproject.toml` (PEP 621 compliance, keywords, classifiers, pytest configuration).
+- Enhanced `README.md` with Shields.io badges, bi-lingual navigation (`README.md` / `README_de.md`), GitHub Markdown Callouts (`> [!NOTE]`, `> [!TIP]`), quick feature overview table, and Mermaid architecture & dataflow diagram.
+- Created `README_de.md` for complete German documentation parity.
+- Standardized `llms.txt`: updated `Last-checked: 2026-07-25`, expanded repository capabilities overview, and added search phrases.
+- Updated repository topic tags (`terminal-chess`, `python3`, `minimax-algorithm`, `claude-ai`, `llm-agent`, `offline-first`).
+
+## 2026-06-11
+
 - Renamed `tests/linux_platform_smoke.py` → `tests/source_platform_smoke.py` (platform-neutral name).
 - Extended `.github/workflows/tests.yml` with macOS CI: `os` matrix now covers `ubuntu-latest` and `macos-latest`.
 - Added a GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
