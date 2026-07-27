@@ -679,19 +679,29 @@ def get_legal_moves(board, white, en_passant_target=None, castling_rights=None):
 
 def update_castling_rights(cr, piece, fr, fc, tr, tc):
     if piece == "K":
-        cr.discard("K"); cr.discard("Q")
+        cr.discard("K")
+        cr.discard("Q")
     elif piece == "k":
-        cr.discard("k"); cr.discard("q")
+        cr.discard("k")
+        cr.discard("q")
     elif piece == "R":
-        if (fr, fc) == (7, 7): cr.discard("K")
-        elif (fr, fc) == (7, 0): cr.discard("Q")
+        if (fr, fc) == (7, 7):
+            cr.discard("K")
+        elif (fr, fc) == (7, 0):
+            cr.discard("Q")
     elif piece == "r":
-        if (fr, fc) == (0, 7): cr.discard("k")
-        elif (fr, fc) == (0, 0): cr.discard("q")
-    if (tr, tc) == (7, 7): cr.discard("K")
-    elif (tr, tc) == (7, 0): cr.discard("Q")
-    elif (tr, tc) == (0, 7): cr.discard("k")
-    elif (tr, tc) == (0, 0): cr.discard("q")
+        if (fr, fc) == (0, 7):
+            cr.discard("k")
+        elif (fr, fc) == (0, 0):
+            cr.discard("q")
+    if (tr, tc) == (7, 7):
+        cr.discard("K")
+    elif (tr, tc) == (7, 0):
+        cr.discard("Q")
+    elif (tr, tc) == (0, 7):
+        cr.discard("k")
+    elif (tr, tc) == (0, 0):
+        cr.discard("q")
 
 
 def board_to_text(board):
@@ -1273,8 +1283,6 @@ def run_worker():
                 board = state["board"]
                 white = state["white_turn"]
                 legal_moves = state["legal_moves"]
-                check = state["check"]
-                history = state["move_history"]
                 castling_rights = state["castling_rights"]
                 en_passant_target = state["en_passant_target"]
 

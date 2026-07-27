@@ -4,6 +4,8 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Performed technical hygiene check: fixed 16 ruff lint errors in `chess.py`, `chess_analyze.py`, and `tests/test_bugsweep_regressions.py` (inline semicolons/colons, unused imports/variables).
+- Updated `llms.txt` header to `Last-checked: 2026-07-27` with 20/20 passing test suite verification notes.
 - Added `pyproject.toml` (PEP 621 compliance, keywords, classifiers, pytest configuration).
 - Enhanced `README.md` with Shields.io badges, bi-lingual navigation (`README.md` / `README_de.md`), GitHub Markdown Callouts (`> [!NOTE]`, `> [!TIP]`), quick feature overview table, and Mermaid architecture & dataflow diagram.
 - Created `README_de.md` for complete German documentation parity.

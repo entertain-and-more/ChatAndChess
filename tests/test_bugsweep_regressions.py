@@ -18,8 +18,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-import chess
-import chess_analyze
+import chess  # noqa: E402
+import chess_analyze  # noqa: E402
 
 
 class TestMakedirExistOk(unittest.TestCase):
