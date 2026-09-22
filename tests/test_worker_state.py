@@ -3,9 +3,11 @@ import sys
 import unittest
 
 
-PROJECT_ROOT = r"C:\Users\User\OneDrive\.TOPICS\.SOFTWARE\ENTERTAINMENT\GAMES\chess"
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 import chess  # noqa: E402
 import chess_analyze  # noqa: E402

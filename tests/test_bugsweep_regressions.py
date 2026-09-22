@@ -163,6 +163,60 @@ class TestGameoverOSError(unittest.TestCase):
             "game_loop() muss chess_gameover.json mit except OSError absichern",
         )
 
+class TestPromotionUciAndValidation(unittest.TestCase):
+    """Bug #12-1: Bauernumwandlung im Bot- und Worker-Modus muss 'q'-Suffix tragen und
+    in claude_code_choose_move() ohne Suffix als Damenumwandlung akzeptiert werden."""
+
+    def test_claude_code_choose_move_auto_promotes_queen_without_suffix(self):
+        board = [["." for _ in range(8)] for _ in range(8)]
+        board[1][4] = "P"
+        board[7][4] = "K"
+        board[0][0] = "k"
+        legal = chess.get_legal_moves(board, True)
+        with tempfile.TemporaryDirectory() as tmp:
+            orig_comm = chess.COMM_DIR
+            orig_req = chess.REQUEST_FILE
+            orig_resp = chess.RESPONSE_FILE
+            chess.COMM_DIR = tmp
+            chess.REQUEST_FILE = os.path.join(tmp, "chess_request.json")
+            chess.RESPONSE_FILE = os.path.join(tmp, "chess_response.json")
+            try:
+                with open(chess.RESPONSE_FILE, "w", encoding="utf-8") as f:
+                    json.dump({"move": "e7e8"}, f)
+                move = chess.claude_code_choose_move(board, True, legal, [], False)
+                self.assertEqual(move, (1, 4, 0, 4, "q"))
+            finally:
+                chess.COMM_DIR = orig_comm
+                chess.REQUEST_FILE = orig_req
+                chess.RESPONSE_FILE = orig_resp
+
+    def test_worker_move_formatting_adds_queen_promo_suffix(self):
+        board = [["." for _ in range(8)] for _ in range(8)]
+        board[1][4] = "P"
+        board[7][4] = "K"
+        board[0][0] = "k"
+        move = (1, 4, 0, 4)
+        if len(move) == 5:
+            fr, fc, tr, tc, promo = move
+        else:
+            fr, fc, tr, tc = move
+            promo = None
+        if chess.is_promotion_move(board, fr, fc, tr) and not promo:
+            promo = "q"
+        move_str = chess.move_to_uci(fr, fc, tr, tc, promo)
+        self.assertEqual(move_str, "e7e8q")
+
+    def test_bot_promotion_defaults_to_queen(self):
+        board = [["." for _ in range(8)] for _ in range(8)]
+        board[1][4] = "P"
+        board[7][4] = "K"
+        board[0][0] = "k"
+        fr, fc, tr, tc = (1, 4, 0, 4)
+        promo = "q" if chess.is_promotion_move(board, fr, fc, tr) else None
+        self.assertEqual(promo, "q")
+        uci = chess.move_to_uci(fr, fc, tr, tc, promo)
+        self.assertEqual(uci, "e7e8q")
+
 
 if __name__ == "__main__":
     unittest.main()

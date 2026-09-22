@@ -1251,8 +1251,14 @@ def claude_code_choose_move(board, white, legal_moves, move_history, check,
 
     move_str = move_str.strip().lower()
     parsed = parse_move_text(move_str)
-    if parsed and parsed in legal_input_moves:
-        return parsed
+    if parsed:
+        if parsed in legal_input_moves:
+            return parsed
+        fr, fc, tr, tc, promo = parsed
+        if promo is None and is_promotion_move(board, fr, fc, tr):
+            queen_promo = (fr, fc, tr, tc, "q")
+            if queen_promo in legal_input_moves:
+                return queen_promo
 
     print("  Ungültiger Zug von Claude Code: {}".format(move_str))
     print("  -> Fallback: Zufälliger Zug")
@@ -1304,6 +1310,8 @@ def run_worker():
                 else:
                     fr, fc, tr, tc = move
                     promo = None
+                if is_promotion_move(board, fr, fc, tr) and not promo:
+                    promo = "q"
                 move_str = move_to_uci(fr, fc, tr, tc, promo)
 
                 response = {"move": move_str, "timestamp": time.time()}
@@ -1464,7 +1472,7 @@ def game_loop(mode, player_white=True, bot_depth=3):
             if not move:
                 return
             fr, fc, tr, tc = move
-            promo = None
+            promo = "q" if is_promotion_move(board, fr, fc, tr) else None
 
         elif mode == "claude":
             move = claude_choose_move(board, white_turn, legal,
