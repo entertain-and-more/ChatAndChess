@@ -27,7 +27,6 @@ class TestChatAndChessMetadata(unittest.TestCase):
             "THIRD_PARTY_LICENSES.md",
             "CHANGELOG.md",
             "EXPORTFORMAT.md",
-            "TODO.md",
             "llms.txt",
             "pyproject.toml",
         ]
