@@ -4,6 +4,14 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Performed Pfad B (Marketing & Discoverability) enhancements across repository documentation and metadata.
+- Added formal `NOTICE` attribution file and comprehensive `THIRD_PARTY_LICENSES.md` (Level 1 SBOM and ten runtime invariants).
+- Integrated Mermaid `sequenceDiagram` detailing the Worker IPC protocol and state synchronization lifecycle in both `README.md` and `README_de.md`.
+- Added ASCII terminal board preview, target personas (`[PERSONA-01]` to `[PERSONA-04]`), and multi-dimension comparison matrix.
+- Updated Shields.io badges (Ruff code style, Zero Dependencies, Bilingual Docs, verified 27 passing tests).
+- Standardized `pyproject.toml` with PEP 621 `license-files` and Notice/Licenses URLs while preserving version 1.2.0 freeze.
+- Added automated metadata and documentation parity contract tests in `tests/test_metadata.py` (7 tests).
+- Updated `llms.txt` header to `Last-checked: 2026-09-22` with 27/27 passing test suite verification notes.
 - Performed technical hygiene check: fixed 16 ruff lint errors in `chess.py`, `chess_analyze.py`, and `tests/test_bugsweep_regressions.py` (inline semicolons/colons, unused imports/variables).
 - Updated `llms.txt` header to `Last-checked: 2026-07-27` with 20/20 passing test suite verification notes.
 - Added `pyproject.toml` (PEP 621 compliance, keywords, classifiers, pytest configuration).

@@ -1,17 +1,19 @@
-## Last-checked: 2026-07-27
+## Last-checked: 2026-09-22
 
 # ChatAndChess
 
 ChatAndChess is a local-first Python terminal chess application featuring multiple game modes: local 2-player hotseat, a built-in Minimax engine bot with adjustable search depth, optional Anthropic Claude API play, and file-based Claude Code worker process integration.
 
-- Verified test suite: 20 passed (100%) via pytest & unittest, ruff linting 100% clean.
+- Verified test suite: 27 passed (100%) via pytest & unittest, ruff linting 100% clean.
+- Architecture: Zero mandatory dependencies, 100% Python Standard Library core.
 
 ## Repository
 
 - Owner/repo: `entertain-and-more/ChatAndChess`
 - Default branch: `master`
 - Main files: `chess.py` (core game, rules engine, Minimax bot, Worker interface), `chess_analyze.py` (tactics analyzer)
-- Tests: `tests/test_worker_state.py`, `tests/source_platform_smoke.py`
+- Tests: `tests/test_bugsweep_regressions.py`, `tests/test_export.py`, `tests/test_worker_state.py`, `tests/source_platform_smoke.py`, `tests/test_metadata.py`
+- Documentation: `README.md` (EN), `README_de.md` (DE), `EXPORTFORMAT.md`, `NOTICE`, `THIRD_PARTY_LICENSES.md`
 - Runtime worker directory: `chess_comm/` (gitignored)
 
 ## Core Capabilities
@@ -20,6 +22,7 @@ ChatAndChess is a local-first Python terminal chess application featuring multip
 - **Rules Compliance**: Castling (short/long), En Passant, Pawn Promotion, Check, Checkmate, Stalemate, legal move filtering.
 - **Engine Hints**: Both sides, AI only, Player only, or Off.
 - **Tactics Analyzer**: Standalone evaluation tool (`chess_analyze.py`) with candidate moves, position score, and move sequence analysis.
+- **Export Formats**: Standardized FEN string generation and `chatandchess-game-v1.json` serialization.
 
 ## Local Checks
 
@@ -27,6 +30,7 @@ ChatAndChess is a local-first Python terminal chess application featuring multip
 python -m unittest discover -s tests -p "test_*.py"
 python -m py_compile chess.py chess_analyze.py
 python tests/source_platform_smoke.py
+ruff check .
 ```
 
 ## Boundaries & Security
@@ -34,6 +38,7 @@ python tests/source_platform_smoke.py
 - Base game relies solely on the Python Standard Library (zero mandatory external dependencies).
 - Optional `anthropic` package for direct API mode.
 - Local secrets, `.env` files, API keys, worker payload JSON, build outputs (`dist/`, `build/`, `*.exe`) are strictly gitignored.
+- Level 1 SBOM and runtime invariants documented in `THIRD_PARTY_LICENSES.md`.
 - Liability is limited to intent and gross negligence (§ 521 BGB).
 
 ## Audience

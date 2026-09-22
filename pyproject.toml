@@ -9,6 +9,7 @@ description = "Terminal chess in Python: local play, Minimax bot, Claude API mod
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_LICENSES.md"]
 authors = [
     { name = "entertain-and-more", email = "info@entertain-and-more.org" }
 ]
@@ -47,6 +48,8 @@ Homepage = "https://github.com/entertain-and-more/ChatAndChess"
 Documentation = "https://github.com/entertain-and-more/ChatAndChess#readme"
 Repository = "https://github.com/entertain-and-more/ChatAndChess"
 "Bug Tracker" = "https://github.com/entertain-and-more/ChatAndChess/issues"
+Notice = "https://github.com/entertain-and-more/ChatAndChess/blob/master/NOTICE"
+"Third-Party Licenses" = "https://github.com/entertain-and-more/ChatAndChess/blob/master/THIRD_PARTY_LICENSES.md"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
