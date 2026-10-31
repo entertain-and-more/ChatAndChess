@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Metadata, SBOM, CI, and Documentation Parity Contract Tests for ChatAndChess.
 
 Run via:
@@ -57,13 +56,28 @@ class TestChatAndChessMetadata(unittest.TestCase):
             self.assertIn(inv_id, sbom, f"Missing invariant: {inv_id}")
 
     def test_pyproject_toml_configuration(self):
-        """Verify pyproject.toml contains required PEP 621 metadata without version bumps."""
+        """Verify pyproject.toml contains required PEP 621/639 metadata without version bumps."""
         content = (PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
         self.assertIn('name = "chatandchess"', content)
         self.assertIn('version = "1.2.0"', content)
+        self.assertIn('license = "MIT"', content)
+        self.assertNotIn("License :: OSI Approved", content)
+        self.assertIn('"Programming Language :: Python :: 3.13"', content)
         self.assertIn('license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_LICENSES.md"]', content)
+        self.assertIn('Changelog = "https://github.com/entertain-and-more/ChatAndChess/blob/master/CHANGELOG.md"', content)
         self.assertIn('Notice = "https://github.com/entertain-and-more/ChatAndChess/blob/master/NOTICE"', content)
         self.assertIn('"Third-Party Licenses" = "https://github.com/entertain-and-more/ChatAndChess/blob/master/THIRD_PARTY_LICENSES.md"', content)
+        self.assertIn("[tool.ruff]", content)
+
+    def test_ci_matrix_hardening(self):
+        """Verify CI workflow matrix covers Linux, macOS, Windows and Python 3.10 through 3.13."""
+        ci_path = PROJECT_ROOT / ".github" / "workflows" / "tests.yml"
+        self.assertTrue(ci_path.is_file(), "CI test workflow tests.yml missing")
+        ci_content = ci_path.read_text(encoding="utf-8")
+        for os_name in ("ubuntu-latest", "macos-latest", "windows-latest"):
+            self.assertIn(os_name, ci_content, f"Missing OS in CI matrix: {os_name}")
+        for py_ver in ('"3.10"', '"3.11"', '"3.12"', '"3.13"'):
+            self.assertIn(py_ver, ci_content, f"Missing Python version in CI matrix: {py_ver}")
 
     def test_readme_bilingual_parity(self):
         """Verify README.md and README_de.md maintain structural parity."""
@@ -97,7 +111,7 @@ class TestChatAndChessMetadata(unittest.TestCase):
     def test_llms_txt_standardization(self):
         """Verify llms.txt has current Last-checked header and mentions test suite."""
         llms = (PROJECT_ROOT / "llms.txt").read_text(encoding="utf-8")
-        self.assertTrue(llms.startswith("## Last-checked: 2026-09-22"))
+        self.assertTrue(llms.startswith("## Last-checked: 2026-10-31"))
         self.assertIn("tests/test_metadata.py", llms)
         self.assertIn("THIRD_PARTY_LICENSES.md", llms)
 

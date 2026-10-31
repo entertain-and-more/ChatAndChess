@@ -3,9 +3,9 @@
 import copy
 import json
 import os
+import random
 import re
 import sys
-import random
 import time
 
 PIECES = {

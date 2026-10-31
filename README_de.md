@@ -1,7 +1,7 @@
 # ChatAndChess (Deutsch)
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 27 passed](https://img.shields.io/badge/tests-27%20passed-brightgreen.svg)](tests/)
+[![Tests: 31 passed](https://img.shields.io/badge/tests-31%20passed-brightgreen.svg)](tests/)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
@@ -241,7 +241,7 @@ ChatAndChess unterstützt standardisierte Exportformate gemäß [EXPORTFORMAT.md
 Die Test-Suite verifiziert Zuggenerierung, Rochaderechte, En-Passant-Zustände, Worker-IPC-Payloads, Exportformate und Plattform-Smoketests:
 
 ```bash
-# Unit-Testsuite ausführen (27 Tests)
+# Unit-Testsuite ausführen (31 Tests)
 python -m unittest discover -s tests -p "test_*.py"
 
 # Python Syntax-Kompilierung prüfen

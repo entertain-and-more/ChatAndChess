@@ -7,7 +7,6 @@ import sys
 import time
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 COMM_DIR = PROJECT_ROOT / "chess_comm"
 REQUEST_FILE = COMM_DIR / "chess_request.json"
@@ -97,14 +96,14 @@ def smoke_worker_boot():
             proc.kill()
             proc.wait(timeout=5)
             stdout = ""
-    
+
     # On Windows, we terminate the process, so we don't strict-check the returncode or the exit message.
     if sys.platform != "win32":
         if proc.returncode not in (0, 130):
             raise AssertionError(f"Worker smoke failed with exit code {proc.returncode}\n{stdout}")
         if "[Worker] Beendet." not in stdout:
             raise AssertionError(f"Unexpected worker smoke output (missing end marker):\n{stdout}")
-            
+
     if "Chess Worker gestartet." not in stdout:
         raise AssertionError(f"Unexpected worker smoke output (missing start marker):\n{stdout}")
 

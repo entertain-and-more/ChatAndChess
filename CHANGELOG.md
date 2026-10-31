@@ -4,6 +4,13 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Performed Pfad A (Repository-Hygiene & CI-Härtung) updates.
+- Hardened CI test matrix in `.github/workflows/tests.yml` to test on `windows-latest` alongside `ubuntu-latest` and `macos-latest`, and added Python 3.13.
+- Upgraded `pyproject.toml` to PEP 621/639 compliant string license (`license = "MIT"`), removed conflicting OSI classifier to ensure pip editable builds succeed without error, registered Python 3.13 classifier, `Changelog` URL, `py-modules`, and standardized `[tool.ruff]` configuration.
+- Fixed ruff import formatting and trailing whitespaces across codebase and tests.
+- Extended contract test suite in `tests/test_metadata.py` to cover CI matrix hardening (multi-OS and Python 3.10-3.13) and PEP 621/639 compliance (31 passing tests).
+- Synchronized documentation and test suite badges in `README.md`, `README_de.md`, and `llms.txt`.
+
 - Performed Pfad B (Marketing & Discoverability) enhancements across repository documentation and metadata.
 - Added formal `NOTICE` attribution file and comprehensive `THIRD_PARTY_LICENSES.md` (Level 1 SBOM and ten runtime invariants).
 - Integrated Mermaid `sequenceDiagram` detailing the Worker IPC protocol and state synchronization lifecycle in both `README.md` and `README_de.md`.
