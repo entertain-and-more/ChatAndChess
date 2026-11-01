@@ -1,10 +1,10 @@
-## Last-checked: 2026-09-22
+## Last-checked: 2026-10-31
 
 # ChatAndChess
 
 ChatAndChess is a local-first Python terminal chess application featuring multiple game modes: local 2-player hotseat, a built-in Minimax engine bot with adjustable search depth, optional Anthropic Claude API play, and file-based Claude Code worker process integration.
 
-- Verified test suite: 27 passed (100%) via pytest & unittest, ruff linting 100% clean.
+- Verified test suite: 31 passed (100%) via pytest & unittest, ruff linting 100% clean.
 - Architecture: Zero mandatory dependencies, 100% Python Standard Library core.
 
 ## Repository

@@ -13,17 +13,23 @@ Usage:
   python chess_analyze.py --top 8           Show more candidate moves
 """
 
-import sys
-import os
-import json
 import copy
+import json
+import os
+import sys
 
 # chess.py aus dem gleichen Verzeichnis importieren
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from chess import (
-    make_move, get_legal_moves, minimax,
-    in_check, is_white, update_castling_rights, order_moves,
-    INITIAL_BOARD, PROMOTION_CHOICES
+    INITIAL_BOARD,
+    PROMOTION_CHOICES,
+    get_legal_moves,
+    in_check,
+    is_white,
+    make_move,
+    minimax,
+    order_moves,
+    update_castling_rights,
 )
 
 COMM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chess_comm")
