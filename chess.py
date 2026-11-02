@@ -7,6 +7,10 @@ import random
 import re
 import sys
 import time
+from datetime import datetime
+from pathlib import Path
+
+__version__ = "1.2.0"
 
 PIECES = {
     "K": "\u265a", "Q": "\u265b", "R": "\u265c",
@@ -756,8 +760,174 @@ def board_to_fen(board, white_to_move, castling_rights, en_passant_target,
     return f"{board_fen} {side} {castling_str} {ep_str} {halfmove} {fullmove}"
 
 
+def move_to_san(board, fr, fc, tr, tc, promo=None, en_passant_target=None, castling_rights=None):
+    """Return standard algebraic notation (SAN) for the specified move."""
+    if castling_rights is None:
+        castling_rights = set()
+    piece = board[fr][fc]
+    white = is_white(piece)
+    piece_type = piece.upper()
+
+    # 1. Castling
+    if piece_type == "K":
+        if tr == fr and tc == fc + 2:
+            base = "O-O"
+        elif tr == fr and tc == fc - 2:
+            base = "O-O-O"
+        else:
+            base = None
+        if base:
+            next_board = make_move(board, fr, fc, tr, tc, en_passant_target, promo)
+            next_cr = set(castling_rights)
+            update_castling_rights(next_cr, piece, fr, fc, tr, tc)
+            next_ep = None
+            if in_check(next_board, not white):
+                if not get_legal_moves(next_board, not white, next_ep, next_cr):
+                    return base + "#"
+                return base + "+"
+            return base
+
+    # 2. Pawn
+    if piece_type == "P":
+        if fc != tc:
+            base = chr(ord("a") + fc) + "x" + pos_to_str(tr, tc)
+        else:
+            base = pos_to_str(tr, tc)
+        if promo:
+            base += "=" + promo.upper()
+    else:
+        # Piece move with disambiguation
+        candidates = []
+        for m in get_legal_moves(board, white, en_passant_target, castling_rights):
+            cfr, cfc, ctr, ctc = m[:4]
+            if (ctr, ctc) == (tr, tc) and (cfr, cfc) != (fr, fc) and board[cfr][cfc].upper() == piece_type:
+                candidates.append((cfr, cfc))
+        dis = ""
+        if candidates:
+            same_file = any(cfc == fc for cfr, cfc in candidates)
+            same_rank = any(cfr == fr for cfr, cfc in candidates)
+            if not same_file:
+                dis = chr(ord("a") + fc)
+            elif not same_rank:
+                dis = str(8 - fr)
+            else:
+                dis = chr(ord("a") + fc) + str(8 - fr)
+        cap = "x" if (board[tr][tc] != "." or (en_passant_target and (tr, tc) == en_passant_target)) else ""
+        base = piece_type + dis + cap + pos_to_str(tr, tc)
+
+    # 3. Check / Checkmate Suffix
+    next_board = make_move(board, fr, fc, tr, tc, en_passant_target, promo)
+    next_cr = set(castling_rights)
+    update_castling_rights(next_cr, piece, fr, fc, tr, tc)
+    next_ep = None
+    if piece_type == "P" and abs(fr - tr) == 2:
+        next_ep = ((fr + tr) // 2, fc)
+    if in_check(next_board, not white):
+        if not get_legal_moves(next_board, not white, next_ep, next_cr):
+            return base + "#"
+        return base + "+"
+    return base
+
+
+def format_pgn(san_moves, result="*", headers=None):
+    """Format a list of SAN move strings into a standard PGN document."""
+    if headers is None:
+        headers = {}
+    today_str = datetime.now().strftime("%Y.%m.%d")
+    default_headers = [
+        ("Event", headers.get("Event", "ChatAndChess Game")),
+        ("Site", headers.get("Site", "Local")),
+        ("Date", headers.get("Date", today_str)),
+        ("Round", headers.get("Round", "1")),
+        ("White", headers.get("White", "White")),
+        ("Black", headers.get("Black", "Black")),
+        ("Result", headers.get("Result", result)),
+    ]
+    lines = [f'[{k} "{v}"]' for k, v in default_headers]
+    lines.append("")
+
+    move_chunks = []
+    for i in range(0, len(san_moves), 2):
+        move_num = (i // 2) + 1
+        w_move = san_moves[i]
+        if i + 1 < len(san_moves):
+            b_move = san_moves[i + 1]
+            move_chunks.append(f"{move_num}. {w_move} {b_move}")
+        else:
+            move_chunks.append(f"{move_num}. {w_move}")
+
+    if result:
+        move_chunks.append(result)
+
+    current_line = []
+    current_len = 0
+    for chunk in move_chunks:
+        add_len = len(chunk) + (1 if current_line else 0)
+        if current_len + add_len > 78:
+            lines.append(" ".join(current_line))
+            current_line = [chunk]
+            current_len = len(chunk)
+        else:
+            current_line.append(chunk)
+            current_len += add_len
+    if current_line:
+        lines.append(" ".join(current_line))
+
+    return "\n".join(lines) + "\n"
+
+
+def replay_moves_to_pgn(moves, event="ChatAndChess Game", site="Local", date=None,
+                        round_num="1", white="Player", black="Bot", result=None):
+    """Replay a list of UCI move strings, compute SAN and return formatted PGN."""
+    board = copy.deepcopy(INITIAL_BOARD)
+    white_turn = True
+    castling_rights = {"K", "Q", "k", "q"}
+    en_passant_target = None
+    san_list = []
+
+    for uci in moves:
+        parsed = parse_move_text(uci)
+        if not parsed:
+            continue
+        fr, fc, tr, tc, promo = parsed
+        san = move_to_san(board, fr, fc, tr, tc, promo, en_passant_target, castling_rights)
+        san_list.append(san)
+
+        piece = board[fr][fc]
+        new_ep = None
+        if piece.upper() == "P" and abs(fr - tr) == 2:
+            new_ep = ((fr + tr) // 2, fc)
+        update_castling_rights(castling_rights, piece, fr, fc, tr, tc)
+        board = make_move(board, fr, fc, tr, tc, en_passant_target, promo)
+        en_passant_target = new_ep
+        white_turn = not white_turn
+
+    if result is None:
+        legal = get_legal_moves(board, white_turn, en_passant_target, castling_rights)
+        if not legal:
+            if in_check(board, white_turn):
+                result = "1-0" if not white_turn else "0-1"
+            else:
+                result = "1/2-1/2"
+        else:
+            result = "*"
+
+    headers = {
+        "Event": event,
+        "Site": site,
+        "Round": round_num,
+        "White": white,
+        "Black": black,
+        "Result": result,
+    }
+    if date:
+        headers["Date"] = date
+    return format_pgn(san_list, result=result, headers=headers)
+
+
 def build_game_export(board, white, castling_rights, en_passant_target,
-                      move_history, mode_kind="local", bot_depth=None):
+                      move_history, mode_kind="local", bot_depth=None,
+                      include_san=False):
     """Return a chatandchess-game-v1.json compatible dict."""
     fen = board_to_fen(board, white, castling_rights, en_passant_target)
     castling_str = "".join(f for f in ("K", "Q", "k", "q") if f in castling_rights) or "-"
@@ -765,10 +935,32 @@ def build_game_export(board, white, castling_rights, en_passant_target,
     if en_passant_target is not None:
         r, c = en_passant_target
         ep_str = chr(ord("a") + c) + str(8 - r)
+
+    san_list = []
+    if include_san and move_history:
+        tmp_board = copy.deepcopy(INITIAL_BOARD)
+        tmp_cr = {"K", "Q", "k", "q"}
+        tmp_ep = None
+        for uci in move_history:
+            parsed = parse_move_text(uci)
+            if parsed:
+                p_fr, p_fc, p_tr, p_tc, p_pr = parsed
+                san_val = move_to_san(tmp_board, p_fr, p_fc, p_tr, p_tc, p_pr, tmp_ep, tmp_cr)
+                san_list.append(san_val)
+                p_piece = tmp_board[p_fr][p_fc]
+                p_new_ep = ((p_fr + p_tr) // 2, p_fc) if p_piece.upper() == "P" and abs(p_fr - p_tr) == 2 else None
+                update_castling_rights(tmp_cr, p_piece, p_fr, p_fc, p_tr, p_tc)
+                tmp_board = make_move(tmp_board, p_fr, p_fc, p_tr, p_tc, tmp_ep, p_pr)
+                tmp_ep = p_new_ep
+            else:
+                san_list.append(None)
+
     moves = []
     for i, m in enumerate(move_history):
         by = "white" if i % 2 == 0 else "black"
-        moves.append({"uci": m, "san": None, "by": by})
+        san_val = san_list[i] if i < len(san_list) else None
+        moves.append({"uci": m, "san": san_val, "by": by})
+
     return {
         "schema": "chatandchess-game-v1",
         "app": "ChatAndChess",
@@ -786,6 +978,100 @@ def build_game_export(board, white, castling_rights, en_passant_target,
         },
         "notes": [],
     }
+
+
+def export_initial_game(filepath):
+    """Export the starting position to a JSON file."""
+    board = copy.deepcopy(INITIAL_BOARD)
+    castling_rights = {"K", "Q", "k", "q"}
+    data = build_game_export(board, True, castling_rights, None, [], mode_kind="local")
+    target = Path(filepath)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"Initial game exported to: {target}")
+
+
+def export_pgn_cli(out_path, moves):
+    """Replay moves and export the resulting game to a PGN file."""
+    pgn_text = replay_moves_to_pgn(moves)
+    target = Path(out_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "w", encoding="utf-8") as f:
+        f.write(pgn_text)
+    print(f"PGN exported ({len(moves)} moves) to: {target}")
+
+
+def export_fen_cli(moves):
+    """Replay moves and print the resulting FEN string."""
+    board = copy.deepcopy(INITIAL_BOARD)
+    white = True
+    castling_rights = {"K", "Q", "k", "q"}
+    en_passant_target = None
+    halfmove = 0
+    fullmove = 1
+    for uci in moves:
+        parsed = parse_move_text(uci)
+        if not parsed:
+            print(f"FEHLER: Ungültiger Zug: {uci}", file=sys.stderr)
+            sys.exit(1)
+        fr, fc, tr, tc, promo = parsed
+        piece = board[fr][fc]
+        target_piece = board[tr][tc]
+        if piece.upper() == "P" or target_piece != ".":
+            halfmove = 0
+        else:
+            halfmove += 1
+        new_ep = None
+        if piece.upper() == "P" and abs(fr - tr) == 2:
+            new_ep = ((fr + tr) // 2, fc)
+        update_castling_rights(castling_rights, piece, fr, fc, tr, tc)
+        board = make_move(board, fr, fc, tr, tc, en_passant_target, promo)
+        en_passant_target = new_ep
+        if not white:
+            fullmove += 1
+        white = not white
+    print(board_to_fen(board, white, castling_rights, en_passant_target, halfmove=halfmove, fullmove=fullmove))
+
+
+def run_healthcheck():
+    """Run non-interactive engine self-tests and return True on success."""
+    board = copy.deepcopy(INITIAL_BOARD)
+    cr = {"K", "Q", "k", "q"}
+    legal = get_legal_moves(board, True, None, cr)
+    if len(legal) != 20:
+        print(f"[Healthcheck] FAIL: Expected 20 initial legal moves, got {len(legal)}")
+        return False
+    fen = board_to_fen(board, True, cr, None)
+    if fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1":
+        print(f"[Healthcheck] FAIL: Unexpected initial FEN: {fen}")
+        return False
+    san_e4 = move_to_san(board, 6, 4, 4, 4, None, None, cr)
+    if san_e4 != "e4":
+        print(f"[Healthcheck] FAIL: Expected e4, got {san_e4}")
+        return False
+    score = evaluate_board(board)
+    if score != 0:
+        print(f"[Healthcheck] FAIL: Initial board evaluation not balanced: {score}")
+        return False
+    print(f"[Healthcheck] OK - ChatAndChess {__version__} engine healthy.")
+    return True
+
+
+def print_cli_help():
+    """Print command line usage information."""
+    print(f"ChatAndChess v{__version__} - Terminal Chess in Python")
+    print()
+    print("Verwendung:")
+    print("  python chess.py                     Startet das interaktive Spiel")
+    print("  python chess.py --version           Zeigt die Version an")
+    print("  python chess.py --healthcheck       Führt automatische Engine-Selbsttests aus")
+    print("  python chess.py --export-initial <p> Schreibt Startposition als chatandchess-game-v1.json")
+    print("  python chess.py --export-pgn <p> [m] Replay von UCI-Zügen und Export nach PGN")
+    print("  python chess.py --fen [m...]        Gibt FEN nach Zugfolge auf stdout aus")
+    print("  python chess.py --worker            Startet den Claude-Code Hintergrund-Worker")
+    print("  python chess.py --prompt            Generiert den Claude-Code System-Prompt")
+    print("  python chess.py --help              Zeigt diese Hilfe an")
 
 
 # ---------------------------------------------------------------------------
@@ -1443,24 +1729,98 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
         if is_human:
             try:
-                inp = input("  Zug (z.B. e2e4, e7e8q, q=quit): ").strip().lower()
+                inp = input("  Zug (z.B. e2e4, e7e8q, q=quit, fen, export, pgn, help): ").strip()
             except (EOFError, KeyboardInterrupt):
                 print("\n  Spiel beendet.")
                 return
 
-            if inp in ("q", "quit", "exit"):
+            inp_clean = inp.lower()
+            if inp_clean in ("q", "quit", "exit"):
                 print("  Spiel beendet.")
                 return
 
-            if len(inp) < 4:
-                print("  Ungültiges Format! Nutze z.B. e2e4")
-                input("  [Enter]")
+            if inp_clean == "fen":
+                current_fen = board_to_fen(board, white_turn, castling_rights, en_passant_target)
+                print("\n  Aktuelle FEN-Position:")
+                print(f"  {current_fen}\n")
+                try:
+                    input("  [Enter zum Weiterspielen]")
+                except (EOFError, KeyboardInterrupt):
+                    pass
                 continue
 
-            move = resolve_player_move(board, inp, legal_input_moves)
+            if inp_clean.startswith("export"):
+                parts = inp.split(maxsplit=1)
+                target_path = parts[1].strip() if len(parts) > 1 else "chatandchess-game-v1.json"
+                try:
+                    export_data = build_game_export(board, white_turn, castling_rights, en_passant_target,
+                                                    move_history, mode_kind=mode, bot_depth=bot_depth,
+                                                    include_san=True)
+                    with open(target_path, "w", encoding="utf-8") as f:
+                        json.dump(export_data, f, ensure_ascii=False, indent=2)
+                    print(f"\n  Partie erfolgreich exportiert nach: {target_path}")
+                except OSError as e:
+                    print(f"\n  FEHLER beim Export: {e}")
+                try:
+                    input("  [Enter zum Weiterspielen]")
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                continue
+
+            if inp_clean.startswith("pgn"):
+                parts = inp.split(maxsplit=1)
+                target_path = parts[1].strip() if len(parts) > 1 else "partie.pgn"
+                try:
+                    pgn_text = replay_moves_to_pgn(move_history)
+                    with open(target_path, "w", encoding="utf-8") as f:
+                        f.write(pgn_text)
+                    print(f"\n  PGN erfolgreich exportiert nach: {target_path}")
+                except OSError as e:
+                    print(f"\n  FEHLER beim PGN-Export: {e}")
+                try:
+                    input("  [Enter zum Weiterspielen]")
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                continue
+
+            if inp_clean in ("help", "?", "hilfe"):
+                print("\n  Verfügbare Befehle:")
+                print("    e2e4, e7e8q : Normaler Zug bzw. Bauernumwandlung")
+                print("    fen         : Zeigt die aktuelle FEN-Notation")
+                print("    export [pfad]: Exportiert die Partie als chatandchess-game-v1.json")
+                print("    pgn [pfad]  : Exportiert die Züge im PGN-Format")
+                print("    tipp / hint : Berechnet und zeigt Taktik-Tipps")
+                print("    q / quit    : Beendet das aktuelle Spiel\n")
+                try:
+                    input("  [Enter zum Weiterspielen]")
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                continue
+
+            if inp_clean in ("hint", "tipp", "tipps", "hints"):
+                hints = compute_hints(board, white_turn, en_passant_target, castling_rights, 2, 5)
+                display_hints(hints, white_turn, True)
+                try:
+                    input("  [Enter zum Weiterspielen]")
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                continue
+
+            if len(inp_clean) < 4:
+                print("  Ungültiges Format! Nutze z.B. e2e4 oder 'help'")
+                try:
+                    input("  [Enter]")
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                continue
+
+            move = resolve_player_move(board, inp_clean, legal_input_moves)
             if move is None:
                 print("  Ungültiges Feld!")
-                input("  [Enter]")
+                try:
+                    input("  [Enter]")
+                except (EOFError, KeyboardInterrupt):
+                    pass
                 continue
 
             fr, fc, tr, tc, promo = move
@@ -1510,14 +1870,43 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
 def main():
     # CLI-Argumente prüfen
-    if len(sys.argv) > 1 and sys.argv[1] == "--worker":
-        run_worker()
-        return
-    if len(sys.argv) > 1 and sys.argv[1] == "--prompt":
-        prompt = generate_session_prompt()
-        print(prompt)
-        print("\n  Gespeichert unter: {}".format(PROMPT_FILE))
-        return
+    if len(sys.argv) > 1:
+        arg = sys.argv[1].lower()
+        if arg in ("--version", "-v"):
+            print(f"ChatAndChess {__version__}")
+            return
+        if arg in ("--healthcheck", "--health"):
+            success = run_healthcheck()
+            sys.exit(0 if success else 1)
+        if arg in ("--help", "-h"):
+            print_cli_help()
+            return
+        if arg == "--export-initial":
+            if len(sys.argv) < 3:
+                print("FEHLER: Pfad für den Initial-Export fehlt. Verwendung: --export-initial <datei.json>", file=sys.stderr)
+                sys.exit(2)
+            export_initial_game(sys.argv[2])
+            return
+        if arg == "--export-pgn":
+            if len(sys.argv) < 3:
+                print("FEHLER: Ausgabepfad fehlt. Verwendung: --export-pgn <datei.pgn> [zug1 zug2 ...]", file=sys.stderr)
+                sys.exit(2)
+            out_path = sys.argv[2]
+            moves = sys.argv[3:]
+            export_pgn_cli(out_path, moves)
+            return
+        if arg == "--fen":
+            moves = sys.argv[2:]
+            export_fen_cli(moves)
+            return
+        if arg == "--worker":
+            run_worker()
+            return
+        if arg == "--prompt":
+            prompt = generate_session_prompt()
+            print(prompt)
+            print("\n  Gespeichert unter: {}".format(PROMPT_FILE))
+            return
 
     while True:
         choice = show_menu()

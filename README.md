@@ -1,7 +1,7 @@
 # ChatAndChess
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 31 passed](https://img.shields.io/badge/tests-31%20passed-brightgreen.svg)](tests/)
+[![Tests: 48 passed](https://img.shields.io/badge/tests-48%20passed-brightgreen.svg)](tests/)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)

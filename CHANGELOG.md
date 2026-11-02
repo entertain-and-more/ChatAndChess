@@ -4,6 +4,31 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+- Implemented full Standard Algebraic Notation (SAN) move converter `move_to_san`:
+  - Accurately supports piece moves, pawn advances, pawn diagonal captures, en-passant captures (`exd6`), pawn promotions (e.g. `bxa8=Q+`, `b8=N`), castling (`O-O`, `O-O-O`), disambiguation for ambiguous piece moves (`Nbd2`, `Nfd2`, `R1a4`), and checks/checkmates (`+`, `#`).
+- Implemented PGN export engine (`format_pgn`, `replay_moves_to_pgn`):
+  - Standard 7-tag roster (`Event`, `Site`, `Date`, `Round`, `White`, `Black`, `Result`).
+  - Move numbering with 78-character line wrapping and automatic game-over detection (`1-0`, `0-1`, `1/2-1/2`, `*`).
+- Extended `build_game_export` with optional `include_san=True` to compute SAN strings in `chatandchess-game-v1.json` moves.
+- Added in-game console commands to `game_loop`:
+  - `fen`: Displays current position in FEN format.
+  - `export [filepath]`: Exports current game to `chatandchess-game-v1.json` with SAN notation.
+  - `pgn [filepath]`: Exports move history to PGN document.
+  - `help` / `?`: Displays interactive command help.
+  - `hint` / `tipp`: Computes and displays tactical suggestions.
+- Implemented headless CLI options in `main()`:
+  - `--version` / `-v`: Outputs version `ChatAndChess 1.2.0`.
+  - `--healthcheck`: Executes non-interactive engine assertions (board validity, legal move generator, evaluation, FEN, SAN).
+  - `--help` / `-h`: Displays CLI usage options.
+  - `--export-initial <path>`: Exports initial game state to `chatandchess-game-v1.json`.
+  - `--export-pgn <path> [moves...]`: Replays UCI moves and exports PGN.
+  - `--fen [moves...]`: Replays UCI moves and prints resulting FEN string with accurate halfmove/fullmove tracking.
+- Added comprehensive contract test suites:
+  - `tests/test_pgn_and_cli.py`: 14 automated tests for SAN generation, PGN formatting, and all headless CLI options.
+  - `tests/test_platform_scope.py`: 3 automated tests verifying strict Desktop/CLI architecture and zero mobile/web scaffold fragmentation.
+- Hardened `tests/source_platform_smoke.py` with multi-OS CLI flag testing across all 6 commands.
+- Total test suite expanded to 48 passing tests (100% green via pytest).
+
 - Performed Pfad A (Repository-Hygiene & CI-Härtung) updates.
 - Hardened CI test matrix in `.github/workflows/tests.yml` to test on `windows-latest` alongside `ubuntu-latest` and `macos-latest`, and added Python 3.13.
 - Upgraded `pyproject.toml` to PEP 621/639 compliant string license (`license = "MIT"`), removed conflicting OSI classifier to ensure pip editable builds succeed without error, registered Python 3.13 classifier, `Changelog` URL, `py-modules`, and standardized `[tool.ruff]` configuration.
