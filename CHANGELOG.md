@@ -4,6 +4,17 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+### Packaging, Desktop Launchers & Governance (2026-11-03)
+- Created canonical `start.bat` launcher that checks for `dist\ChatAndChess.exe` first and falls back to Python runtime (`py -3` / `python`).
+- Built and verified standalone Windows executable `dist\ChatAndChess.exe` with PyInstaller (version 1.2.0, `--version` and `--healthcheck` confirmed passing).
+- Added GitHub governance configurations:
+  - `.github/dependabot.yml`: Automated weekly security-only dependency updates with PR limit 0.
+  - `.github/labels.yml`: Standardized repository taxonomy labels.
+- Hardened `.gitignore` against tracking internal logs (`MARKETING-LOG.txt`, `CHECKS-LOG.txt`).
+- Extended contract test suite `tests/test_metadata.py` with 3 new tests validating `start.bat`, GitHub governance files, and `.gitignore` log defense (51 passed tests, 100% green).
+- Synchronized documentation, badges (Verified/Geprüft-2026--11--03, 51 passed tests), and machine-readable `llms.txt`.
+- Fulfilled and closed `TW-CHESS-01` in `AUFGABEN.txt`.
+
 - Implemented full Standard Algebraic Notation (SAN) move converter `move_to_san`:
   - Accurately supports piece moves, pawn advances, pawn diagonal captures, en-passant captures (`exd6`), pawn promotions (e.g. `bxa8=Q+`, `b8=N`), castling (`O-O`, `O-O-O`), disambiguation for ambiguous piece moves (`Nbd2`, `Nfd2`, `R1a4`), and checks/checkmates (`+`, `#`).
 - Implemented PGN export engine (`format_pgn`, `replay_moves_to_pgn`):

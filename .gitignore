@@ -39,6 +39,8 @@ AUFGABEN.txt
 CLAUDE_PROMPT.txt
 chess_settings.json
 # ---- Interne Steuerungsdateien ----
+MARKETING-LOG.txt
+CHECKS-LOG.txt
 BEFUNDE.md
 DECISIONS.md
 PORTIERUNGSPLAN.md

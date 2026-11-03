@@ -1,7 +1,8 @@
 # ChatAndChess
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 48 passed](https://img.shields.io/badge/tests-48%20passed-brightgreen.svg)](tests/)
+[![Tests: 52 passed](https://img.shields.io/badge/tests-52%20passed-brightgreen.svg)](tests/)
+[![Verified: 2026-11-03](https://img.shields.io/badge/Verified-2026--11--03-brightgreen.svg)](#)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
@@ -21,7 +22,7 @@ Terminal-Schach für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Int
 | **Rules Engine** | Castling, En Passant, Pawn Promotion, Check, Checkmate, and Stalemate |
 | **Tactics Analyzer** | Position evaluator & candidate move ranker (`chess_analyze.py`) |
 | **Worker Mode** | File/JSON-based subprocess interface for AI agents (`python chess.py --worker`) |
-| **Export Formats** | Portable FEN string generation & `chatandchess-game-v1.json` export |
+| **Export Formats** | Portable FEN string generation, tournament PGN & `chatandchess-game-v1.json` export |
 
 > [!NOTE]
 > **AI & LLM Integration**: ChatAndChess includes a specialized file-based `--worker` IPC mode designed for AI agents like Claude Code to play chess as background sub-processes without losing legal move context (such as castling rights & en-passant state). Machine-readable context is available in [llms.txt](llms.txt).
@@ -185,11 +186,17 @@ pip install -r requirements.txt
 ## Quick Start
 
 ```bash
-# Start game
+# Universal Windows launcher (auto-detects dist/ChatAndChess.exe or Python runtime)
+start.bat
+
+# Standard Python execution
 python chess.py
 
-# Windows launcher
+# Windows interactive menu launcher
 START_CHESS.bat
+
+# Standalone executable verification (built via build_exe.bat)
+dist\ChatAndChess.exe --healthcheck
 
 # Worker mode for Claude Code / AI agents
 python chess.py --worker

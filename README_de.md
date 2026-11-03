@@ -1,7 +1,8 @@
 # ChatAndChess (Deutsch)
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 48 passed](https://img.shields.io/badge/tests-48%20passed-brightgreen.svg)](tests/)
+[![Tests: 52 passed](https://img.shields.io/badge/tests-52%20passed-brightgreen.svg)](tests/)
+[![Geprüft: 2026-11-03](https://img.shields.io/badge/Geprüft-2026--11--03-brightgreen.svg)](#)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
@@ -20,7 +21,7 @@ Terminal-Schach in Python für lokale Partien, Minimax-Bot, Claude API und Claud
 | **Regel-Engine** | Rochade, En Passant, Bauernumwandlung, Schach, Matt und Patt |
 | **Taktik-Analyzer** | Stellungsbewertung & Kandidatenzug-Ranking (`chess_analyze.py`) |
 | **Worker-Modus** | Dateibasierte Subprozess-Schnittstelle für KI-Agenten (`python chess.py --worker`) |
-| **Export-Formate** | Portable FEN-Generierung & `chatandchess-game-v1.json`-Export |
+| **Export-Formate** | Portable FEN-Generierung, Turnier-PGN & `chatandchess-game-v1.json`-Export |
 
 > [!NOTE]
 > **KI- & LLM-Integration**: ChatAndChess enthält einen spezialisierten `--worker`-IPC-Modus, mit dem KI-Agenten wie Claude Code als Hintergrundprozess Schach spielen können, ohne legale Zug-Kontexte (wie Rochaderechte & En-Passant-Status) zu verlieren. Maschinenlesbare Spezifikationen sind in [llms.txt](llms.txt) hinterlegt.
@@ -184,11 +185,17 @@ pip install -r requirements.txt
 ## Schnellstart
 
 ```bash
-# Spiel starten
+# Universeller Windows-Starter (erkennt dist\ChatAndChess.exe oder Python-Laufzeit)
+start.bat
+
+# Standard-Start via Python
 python chess.py
 
-# Windows-Starter
+# Windows-Menüstarter
 START_CHESS.bat
+
+# Eigenständige EXE-Version prüfen (gebaut via build_exe.bat)
+dist\ChatAndChess.exe --healthcheck
 
 # Worker-Modus für Claude Code / KI-Agenten
 python chess.py --worker

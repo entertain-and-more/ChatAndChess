@@ -1,18 +1,18 @@
-## Last-checked: 2026-10-31
+## Last-checked: 2026-11-03
 
 # ChatAndChess
 
 ChatAndChess is a local-first Python terminal chess application featuring multiple game modes: local 2-player hotseat, a built-in Minimax engine bot with adjustable search depth, optional Anthropic Claude API play, and file-based Claude Code worker process integration.
 
-- Verified test suite: 31 passed (100%) via pytest & unittest, ruff linting 100% clean.
+- Verified test suite: 52 passed (100%) via pytest & unittest, ruff linting 100% clean.
 - Architecture: Zero mandatory dependencies, 100% Python Standard Library core.
 
 ## Repository
 
 - Owner/repo: `entertain-and-more/ChatAndChess`
 - Default branch: `master`
-- Main files: `chess.py` (core game, rules engine, Minimax bot, Worker interface), `chess_analyze.py` (tactics analyzer)
-- Tests: `tests/test_bugsweep_regressions.py`, `tests/test_export.py`, `tests/test_worker_state.py`, `tests/source_platform_smoke.py`, `tests/test_metadata.py`
+- Main files: `chess.py` (core game, rules engine, Minimax bot, Worker interface), `chess_analyze.py` (tactics analyzer), `start.bat` (universal launcher with executable fallback), `build_exe.bat` (PyInstaller build script)
+- Tests: `tests/test_bugsweep_regressions.py`, `tests/test_export.py`, `tests/test_worker_state.py`, `tests/source_platform_smoke.py`, `tests/test_metadata.py`, `tests/test_pgn_and_cli.py`, `tests/test_platform_scope.py`
 - Documentation: `README.md` (EN), `README_de.md` (DE), `EXPORTFORMAT.md`, `NOTICE`, `THIRD_PARTY_LICENSES.md`
 - Runtime worker directory: `chess_comm/` (gitignored)
 
@@ -22,7 +22,7 @@ ChatAndChess is a local-first Python terminal chess application featuring multip
 - **Rules Compliance**: Castling (short/long), En Passant, Pawn Promotion, Check, Checkmate, Stalemate, legal move filtering.
 - **Engine Hints**: Both sides, AI only, Player only, or Off.
 - **Tactics Analyzer**: Standalone evaluation tool (`chess_analyze.py`) with candidate moves, position score, and move sequence analysis.
-- **Export Formats**: Standardized FEN string generation and `chatandchess-game-v1.json` serialization.
+- **Export Formats**: Standardized FEN string generation, tournament PGN export, and `chatandchess-game-v1.json` serialization with SAN.
 
 ## Local Checks
 

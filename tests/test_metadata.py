@@ -111,9 +111,47 @@ class TestChatAndChessMetadata(unittest.TestCase):
     def test_llms_txt_standardization(self):
         """Verify llms.txt has current Last-checked header and mentions test suite."""
         llms = (PROJECT_ROOT / "llms.txt").read_text(encoding="utf-8")
-        self.assertTrue(llms.startswith("## Last-checked: 2026-10-31"))
+        self.assertTrue(
+            llms.startswith("## Last-checked: 2026-10-31")
+            or llms.startswith("## Last-checked: 2026-11-03")
+        )
         self.assertIn("tests/test_metadata.py", llms)
         self.assertIn("THIRD_PARTY_LICENSES.md", llms)
+
+    def test_github_governance_files(self):
+        """Verify dependabot.yml and labels.yml exist and contain expected configurations."""
+        dependabot_path = PROJECT_ROOT / ".github" / "dependabot.yml"
+        self.assertTrue(dependabot_path.is_file(), "dependabot.yml missing")
+        dep_content = dependabot_path.read_text(encoding="utf-8")
+        self.assertIn("package-ecosystem: \"pip\"", dep_content)
+        self.assertIn("open-pull-requests-limit: 0", dep_content)
+
+        labels_path = PROJECT_ROOT / ".github" / "labels.yml"
+        self.assertTrue(labels_path.is_file(), "labels.yml missing")
+        labels_content = labels_path.read_text(encoding="utf-8")
+        self.assertIn("name: bug", labels_content)
+        self.assertIn("name: enhancement", labels_content)
+
+    def test_start_bat_launcher(self):
+        """Verify start.bat launcher exists and contains executable check."""
+        start_bat = PROJECT_ROOT / "start.bat"
+        self.assertTrue(start_bat.is_file(), "start.bat missing")
+        content = start_bat.read_text(encoding="utf-8")
+        self.assertIn("ChatAndChess.exe", content)
+        self.assertIn("chess.py", content)
+
+    def test_internal_logs_not_tracked(self):
+        """Ensure internal log files are in .gitignore."""
+        gitignore = (PROJECT_ROOT / ".gitignore").read_text(encoding="utf-8")
+        self.assertIn("MARKETING-LOG.txt", gitignore)
+        self.assertIn("CHECKS-LOG.txt", gitignore)
+
+    def test_icons_and_assets(self):
+        """Verify icon assets exist and are valid."""
+        for name in ("ChatAndChess.ico", "ChatAndChess.png", "assets/icon.png", "assets/app_icon.ico"):
+            p = PROJECT_ROOT / name
+            self.assertTrue(p.is_file(), f"Asset missing: {name}")
+            self.assertGreater(p.stat().st_size, 100, f"Asset too small: {name}")
 
 
 if __name__ == "__main__":
