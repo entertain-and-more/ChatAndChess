@@ -4,6 +4,16 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+### Marketing, Discoverability, Visual Vector Preview & Documentation Parity (2026-11-04)
+- Created high-resolution dark-mode terminal preview vector asset `assets/terminal-preview.svg` showing live board layout, move history, tactical evaluation (+0.38), and interactive prompt.
+- Embedded vector terminal preview in both `README.md` and `README_de.md` alongside gameplay screenshot.
+- Documented in-game console commands (`fen`, `pgn`, `export`, `hint`, `help`, `quit`) in both English and German READMEs.
+- Documented headless CLI scripting interface (`--healthcheck`, `--fen`, `--export-pgn`, `--export-initial`, `--version`) with complete reproducible CLI examples.
+- Enriched `pyproject.toml` keywords with discoverability and SEO terms (`uci-chess`, `tactics-analyzer`, `zero-egress`, `local-first`, `pgn-export`, `fen`).
+- Added Shields.io badges for PGN & FEN support and Zero-Egress local guarantee, and refreshed verification stempel to 2026-11-04.
+- Extended contract test suite `tests/test_metadata.py` with 3 new automated test cases validating SVG asset integrity, discoverability keywords, and README command documentation parity (55 passed tests, 100% green).
+- Synchronized `llms.txt` with latest capability specifications and search phrases (`Last-checked: 2026-11-04`).
+
 ### Packaging, Desktop Launchers & Governance (2026-11-03)
 - Created canonical `start.bat` launcher that checks for `dist\ChatAndChess.exe` first and falls back to Python runtime (`py -3` / `python`).
 - Built and verified standalone Windows executable `dist\ChatAndChess.exe` with PyInstaller (version 1.2.0, `--version` and `--healthcheck` confirmed passing).
