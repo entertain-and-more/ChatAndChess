@@ -4,6 +4,34 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+### Tier-2 Multi-Language Architecture & Quality Gating (2026-11-05)
+- **TW-CHESS-03 (I18N Runtime Architecture `i18n.py`)**:
+  - Implemented standalone thread-safe `TranslationManager` with 4-level fallback hierarchy (`target -> en -> de -> key/default`).
+  - Added automatic system language detection from environment (`CHATANDCHESS_LANG`, `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG`, `locale.getdefaultlocale`).
+  - Added thread-safe global facades `_t()` / `tr()`, `set_language()`, `get_language()`, `get_supported_languages()`, `get_language_name()`.
+  - Added defensive Windows console UTF-8 stream reconfiguration (`sys.stdout.reconfigure(encoding='utf-8')`).
+- **TW-CHESS-04 (Tier-2 Translation Catalog `locales/translations.json`)**:
+  - Authored full translation catalog covering 122 semantic keys across all 6 Tier-2 languages (DE, EN, ES, ZH, JA, RU) with 100% parity.
+  - Formatted genuine German umlauts (ä, ö, ü, Ä, Ö, Ü, ß) and authentic chess terminology across Spanish, Chinese, Japanese, and Russian.
+- **TW-CHESS-05 (Translation Management CLI `manage_translations.py`)**:
+  - Implemented standalone CLI tool with `--check` (exit 0/1 CI gate), `--stats` (coverage statistics table), `--scan` (source scanner), and custom `--dir`.
+  - Implemented atomic file persistence with process-isolated staging (`.tmp.<pid>`), `flush()`, `fsync()`, and `stat.S_IWRITE` safety before `os.replace`.
+- **TW-CHESS-06 (UI String Decoupling in `chess.py` & `chess_analyze.py`)**:
+  - Decoupled user-facing strings, prompts, menus, difficulty selections, move errors, and tactics analyzer banners.
+  - Added dynamic in-game command `lang [code]` / `sprache [code]` for runtime language switching.
+  - Added multilingual in-game command aliases (`help`/`hilfe`/`ayuda`, `hint`/`tipp`/`consejo`, `quit`/`beenden`/`salir`).
+  - Added global `--lang <code>` CLI flag in both `chess.py` and `chess_analyze.py`.
+- **TW-CHESS-07 (Tier-2 Spanish Documentation `README_es.md` & Metadata)**:
+  - Created complete Spanish documentation `README_es.md` with 1:1 section parity to `README.md` and `README_de.md`.
+  - Added trilingual navigation switcher in `README.md`, `README_de.md`, and `README_es.md`.
+  - Synchronized `llms.txt` and `pyproject.toml` (added `i18n` and `manage_translations` to `py-modules`).
+- **TW-CHESS-08 (Contract Test Suites & CI Gating)**:
+  - Implemented `tests/test_i18n.py` (11 contract tests covering language switching, fallbacks, thread safety, and catalog coverage).
+  - Implemented `tests/test_manage_translations.py` (5 contract tests covering `--check`, `--stats`, `--scan`, atomic saving, and mismatch detection).
+  - Updated `tests/source_platform_smoke.py` with Check 7 verifying `manage_translations.py --check`.
+  - Updated `.github/workflows/tests.yml` to compile modules and verify translation parity in CI.
+  - Total test suite expanded to 68 tests (100% green via pytest and unittest).
+
 ### Packaging, Desktop Launchers & Governance (2026-11-03)
 - Created canonical `start.bat` launcher that checks for `dist\ChatAndChess.exe` first and falls back to Python runtime (`py -3` / `python`).
 - Built and verified standalone Windows executable `dist\ChatAndChess.exe` with PyInstaller (version 1.2.0, `--version` and `--healthcheck` confirmed passing).

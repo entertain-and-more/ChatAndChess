@@ -1,4 +1,4 @@
-## Last-checked: 2026-11-03
+## Last-checked: 2026-11-05
 
 # ChatAndChess
 
@@ -11,9 +11,9 @@ ChatAndChess is a local-first Python terminal chess application featuring multip
 
 - Owner/repo: `entertain-and-more/ChatAndChess`
 - Default branch: `master`
-- Main files: `chess.py` (core game, rules engine, Minimax bot, Worker interface), `chess_analyze.py` (tactics analyzer), `start.bat` (universal launcher with executable fallback), `build_exe.bat` (PyInstaller build script)
-- Tests: `tests/test_bugsweep_regressions.py`, `tests/test_export.py`, `tests/test_worker_state.py`, `tests/source_platform_smoke.py`, `tests/test_metadata.py`, `tests/test_pgn_and_cli.py`, `tests/test_platform_scope.py`
-- Documentation: `README.md` (EN), `README_de.md` (DE), `EXPORTFORMAT.md`, `NOTICE`, `THIRD_PARTY_LICENSES.md`
+- Main files: `chess.py`, `i18n.py` (Tier-2 multi-language runtime), `manage_translations.py` (translation manager & CI gate) (core game, rules engine, Minimax bot, Worker interface), `chess_analyze.py` (tactics analyzer), `start.bat` (universal launcher with executable fallback), `build_exe.bat` (PyInstaller build script)
+- Tests: `tests/test_bugsweep_regressions.py`, `tests/test_export.py`, `tests/test_worker_state.py`, `tests/source_platform_smoke.py`, `tests/test_metadata.py`, `tests/test_pgn_and_cli.py`, `tests/test_platform_scope.py, tests/test_i18n.py, tests/test_manage_translations.py`
+- Documentation: `README.md` (EN), `README_de.md` (DE), `README_es.md` (ES), `EXPORTFORMAT.md`, `NOTICE`, `THIRD_PARTY_LICENSES.md`
 - Runtime worker directory: `chess_comm/` (gitignored)
 
 ## Core Capabilities

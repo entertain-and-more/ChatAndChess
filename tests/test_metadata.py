@@ -20,6 +20,7 @@ class TestChatAndChessMetadata(unittest.TestCase):
         required = [
             "README.md",
             "README_de.md",
+            "README_es.md",
             "SECURITY.md",
             "LICENSE",
             "NOTICE",
@@ -79,30 +80,36 @@ class TestChatAndChessMetadata(unittest.TestCase):
         for py_ver in ('"3.10"', '"3.11"', '"3.12"', '"3.13"'):
             self.assertIn(py_ver, ci_content, f"Missing Python version in CI matrix: {py_ver}")
 
-    def test_readme_bilingual_parity(self):
-        """Verify README.md and README_de.md maintain structural parity."""
+    def test_readme_trilingual_parity(self):
+        """Verify README.md, README_de.md, and README_es.md maintain structural parity."""
         en_text = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
         de_text = (PROJECT_ROOT / "README_de.md").read_text(encoding="utf-8")
+        es_text = (PROJECT_ROOT / "README_es.md").read_text(encoding="utf-8")
 
         self.assertIn("## Table of Contents", en_text)
         self.assertIn("## Inhaltsverzeichnis", de_text)
+        self.assertIn("## Tabla de Contenidos", es_text)
 
-        # Both must include sequence diagrams and architecture diagrams
+        # All must include sequence diagrams and architecture diagrams
         self.assertEqual(en_text.count("```mermaid"), 2)
         self.assertEqual(de_text.count("```mermaid"), 2)
+        self.assertEqual(es_text.count("```mermaid"), 2)
 
-        # Both must link to each other
-        self.assertIn("[English](README.md) | [Deutsch](README_de.md)", en_text)
-        self.assertIn("[English](README.md) | [Deutsch](README_de.md)", de_text)
+        # All must link to each other
+        link_bar = "[English](README.md) | [Deutsch](README_de.md) | [Español](README_es.md)"
+        self.assertIn(link_bar, en_text)
+        self.assertIn(link_bar, de_text)
+        self.assertIn(link_bar, es_text)
 
-        # Both must contain target personas
+        # All must contain target personas
         for p in ("[PERSONA-01]", "[PERSONA-02]", "[PERSONA-03]", "[PERSONA-04]"):
             self.assertIn(p, en_text)
             self.assertIn(p, de_text)
+            self.assertIn(p, es_text)
 
     def test_mermaid_syntax_safety(self):
         """Ensure sequenceDiagram blocks contain no semicolons in labels."""
-        for md_name in ("README.md", "README_de.md"):
+        for md_name in ("README.md", "README_de.md", "README_es.md"):
             content = (PROJECT_ROOT / md_name).read_text(encoding="utf-8")
             seq_blocks = re.findall(r"```mermaid\s+sequenceDiagram(.*?)```", content, re.DOTALL)
             for block in seq_blocks:
@@ -114,6 +121,7 @@ class TestChatAndChessMetadata(unittest.TestCase):
         self.assertTrue(
             llms.startswith("## Last-checked: 2026-10-31")
             or llms.startswith("## Last-checked: 2026-11-03")
+            or llms.startswith("## Last-checked: 2026-11-05")
         )
         self.assertIn("tests/test_metadata.py", llms)
         self.assertIn("THIRD_PARTY_LICENSES.md", llms)

@@ -189,6 +189,12 @@ def smoke_cli_flags():
     if expected_fen not in res_fen.stdout:
         raise AssertionError(f"Unexpected FEN output: {res_fen.stdout}")
 
+    # 7. Translation Parity Gate (Policy P-006 Tier-2)
+    res_trans = run_command(["manage_translations.py", "--check"])
+    assert_result(res_trans, "Translation Parity Gate smoke")
+    if "Translation Parity Gate: PASS" not in res_trans.stdout:
+        raise AssertionError(f"Unexpected translation check output: {res_trans.stdout}")
+
 
 def main():
     backups = backup_runtime_files()

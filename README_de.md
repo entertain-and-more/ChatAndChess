@@ -8,9 +8,9 @@
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0%20required-brightgreen.svg)](#voraussetzungen)
-[![Dokumentation: Zweisprachig](https://img.shields.io/badge/docs-EN%20%7C%20DE-blue.svg)](#)
+[![Dokumentation: Mehrsprachig](https://img.shields.io/badge/docs-EN%20%7C%20DE%20%7C%20ES-blue.svg)](#)
 
-[English](README.md) | [Deutsch](README_de.md)
+[English](README.md) | [Deutsch](README_de.md) | [Español](README_es.md)
 
 Terminal-Schach in Python für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Integration.
 
