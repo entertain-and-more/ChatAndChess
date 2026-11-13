@@ -4,6 +4,12 @@ All notable changes to ChatAndChess are documented here.
 
 ## Unreleased
 
+### Integration of the marketing branch on the i18n base (2026-11-13)
+- Merged the marketing/discoverability change (#2) onto the Tier-2 i18n `master` and resolved the conflicts in `CHANGELOG.md`, `README.md`, `README_de.md`, `llms.txt` and `tests/test_metadata.py`.
+- Included the CI fix from #4: `test_portierungsplan_aligns_with_architecture` skips when the local-only `PORTIERUNGSPLAN.md` is absent.
+- `README_es.md` now carries the terminal preview, the headless CLI section and the in-game command table; all three READMEs document `lang [code]`.
+- Test badge and `llms.txt` report the measured result (70 passed, 1 skipped); `test_in_game_commands_and_cli_documented` covers the Spanish README.
+
 ### Tier-2 Multi-Language Architecture & Quality Gating (2026-11-05)
 - **TW-CHESS-03 (I18N Runtime Architecture `i18n.py`)**:
   - Implemented standalone thread-safe `TranslationManager` with 4-level fallback hierarchy (`target -> en -> de -> key/default`).
@@ -31,6 +37,16 @@ All notable changes to ChatAndChess are documented here.
   - Updated `tests/source_platform_smoke.py` with Check 7 verifying `manage_translations.py --check`.
   - Updated `.github/workflows/tests.yml` to compile modules and verify translation parity in CI.
   - Total test suite expanded to 68 tests (100% green via pytest and unittest).
+
+### Marketing, Discoverability, Visual Vector Preview & Documentation Parity (2026-11-04)
+- Created high-resolution dark-mode terminal preview vector asset `assets/terminal-preview.svg` showing live board layout, move history, tactical evaluation (+0.38), and interactive prompt.
+- Embedded vector terminal preview in both `README.md` and `README_de.md` alongside gameplay screenshot.
+- Documented in-game console commands (`fen`, `pgn`, `export`, `hint`, `help`, `quit`) in both English and German READMEs.
+- Documented headless CLI scripting interface (`--healthcheck`, `--fen`, `--export-pgn`, `--export-initial`, `--version`) with complete reproducible CLI examples.
+- Enriched `pyproject.toml` keywords with discoverability and SEO terms (`uci-chess`, `tactics-analyzer`, `zero-egress`, `local-first`, `pgn-export`, `fen`).
+- Added Shields.io badges for PGN & FEN support and Zero-Egress local guarantee, and refreshed verification stempel to 2026-11-04.
+- Extended contract test suite `tests/test_metadata.py` with 3 new automated test cases validating SVG asset integrity, discoverability keywords, and README command documentation parity (55 passed tests, 100% green).
+- Synchronized `llms.txt` with latest capability specifications and search phrases (`Last-checked: 2026-11-04`).
 
 ### Packaging, Desktop Launchers & Governance (2026-11-03)
 - Created canonical `start.bat` launcher that checks for `dist\ChatAndChess.exe` first and falls back to Python runtime (`py -3` / `python`).
