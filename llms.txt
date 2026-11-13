@@ -4,7 +4,7 @@
 
 ChatAndChess is a local-first Python terminal chess application featuring multiple game modes: local 2-player hotseat, a built-in Minimax engine bot with adjustable search depth, optional Anthropic Claude API play, and file-based Claude Code worker process integration.
 
-- Verified test suite: 52 passed (100%) via pytest & unittest, ruff linting 100% clean.
+- Verified test suite: 70 passed, 1 skipped via pytest & unittest, ruff linting 100% clean.
 - Architecture: Zero mandatory dependencies, 100% Python Standard Library core.
 
 ## Repository
@@ -23,6 +23,8 @@ ChatAndChess is a local-first Python terminal chess application featuring multip
 - **Engine Hints**: Both sides, AI only, Player only, or Off.
 - **Tactics Analyzer**: Standalone evaluation tool (`chess_analyze.py`) with candidate moves, position score, and move sequence analysis.
 - **Export Formats**: Standardized FEN string generation, tournament PGN export, and `chatandchess-game-v1.json` serialization with SAN.
+- **In-Game Commands**: Interactive console commands (`fen`, `pgn [path]`, `export [path]`, `hint`, `help`, `quit`).
+- **Headless CLI**: Scriptable flags (`--healthcheck`, `--fen [moves...]`, `--export-pgn <path> [moves...]`, `--export-initial <path>`, `--version`).
 
 ## Local Checks
 
@@ -54,4 +56,5 @@ Primary audiences are Python developers interested in game AI and LLM tool integ
 "chess" "Claude Code" "worker mode"
 "terminal chess game" "AI integration" "open source"
 "python terminal chess" "minimax chess engine" "claude worker chess"
+"chatandchess pgn export" "fen chess python" "uci terminal chess"
 ```
