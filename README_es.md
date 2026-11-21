@@ -1,13 +1,15 @@
 # ChatAndChess (Español)
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 52 passed](https://img.shields.io/badge/tests-52%20passed-brightgreen.svg)](tests/)
-[![Verified: 2026-11-05](https://img.shields.io/badge/Verified-2026--11--05-brightgreen.svg)](#)
+[![Tests: 71 passed](https://img.shields.io/badge/tests-71%20passed-brightgreen.svg)](tests/)
+[![Verified: 2026-11-21](https://img.shields.io/badge/Verified-2026--11--21-brightgreen.svg)](#)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0%20required-brightgreen.svg)](#requisitos)
+[![PGN & FEN: Compatible](https://img.shields.io/badge/export-PGN%20%7C%20FEN%20%7C%20JSON-blue.svg)](#exportación-del-estado-de-juego)
+[![Zero Egress](https://img.shields.io/badge/privacy-zero%20egress-brightgreen.svg)](#privacidad-seguridad-y-zero-egress)
 [![Documentation: Multilingual](https://img.shields.io/badge/docs-EN%20%7C%20DE%20%7C%20ES-blue.svg)](#)
 
 [English](README.md) | [Deutsch](README_de.md) | [Español](README_es.md)
@@ -51,6 +53,10 @@ Terminal chess for local games, built-in Minimax bot, Claude API, and Claude Cod
 ---
 
 ## Capturas de Pantalla y Vista Previa
+
+![Vista previa de ChatAndChess en terminal](assets/terminal-preview.svg)
+
+<br>
 
 ![Captura de pantalla de ChatAndChess](README/screenshots/gameplay.jpg)
 
@@ -207,6 +213,27 @@ python chess.py --worker
 python chess.py --lang es
 ```
 
+### Interfaz CLI sin interfaz gráfica y scripting
+
+ChatAndChess ofrece opciones de línea de comandos no interactivas como `--healthcheck`, `--fen`, `--export-pgn` y `--version` para pruebas automatizadas, pipelines de CI y scripts:
+
+```bash
+# Comprobación no interactiva del motor (valida tablero, jugadas, FEN y SAN)
+python chess.py --healthcheck
+
+# Reproducir jugadas y mostrar la cadena FEN resultante
+python chess.py --fen e2e4 e7e5 g1f3 b8c6
+
+# Reproducir jugadas y exportar un documento PGN completo
+python chess.py --export-pgn game.pgn e2e4 e7e5 g1f3 b8c6 f1c4
+
+# Exportar el estado inicial del juego a JSON
+python chess.py --export-initial initial_board.json
+
+# Mostrar la versión del motor
+python chess.py --version
+```
+
 ---
 
 ## Cómo Jugar
@@ -216,7 +243,20 @@ Las jugadas utilizan la notación estándar UCI: `e2e4` (casilla de origen a cas
 - Movimientos normales: `e2e4`, `g1f3`
 - Enroque: `e1g1` (corto) o `e1c1` (largo)
 - Coronación de peón: Se solicita automáticamente al alcanzar la octava (o primera) fila, ej. `e7e8q`
-- Comandos en la partida: `help` (ayuda), `hint` (consejo), `fen` (notación FEN), `pgn` (exportar PGN), `lang` (cambiar idioma), `quit` (salir)
+
+### Comandos de consola durante la partida
+
+Durante cualquier partida interactiva, introduce estos comandos directamente en el prompt:
+
+| Comando | Acción | Ejemplo |
+|---|---|---|
+| `fen` | Muestra el tablero actual en notación FEN | `fen` |
+| `export` / `export [ruta]` | Exporta el estado actual de la partida a JSON con notación SAN | `export mi_partida.json` |
+| `pgn` / `pgn [ruta]` | Exporta el historial completo de jugadas a un archivo PGN estándar | `pgn partida.pgn` |
+| `hint` / `consejo` | Calcula una recomendación táctica con la profundidad activa del bot | `consejo` |
+| `help` / `ayuda` / `?` | Muestra los controles y comandos disponibles | `ayuda` |
+| `lang [código]` | Cambia el idioma de la interfaz durante la partida (de, en, es, zh, ja, ru) | `lang es` |
+| `quit` / `exit` / `salir` | Sale de la partida de forma segura | `salir` |
 
 ---
 
