@@ -1,8 +1,8 @@
 # ChatAndChess (Deutsch)
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 55 passed](https://img.shields.io/badge/tests-55%20passed-brightgreen.svg)](tests/)
-[![Geprüft: 2026-11-04](https://img.shields.io/badge/Geprüft-2026--11--04-brightgreen.svg)](#)
+[![Tests: 71 passed](https://img.shields.io/badge/tests-71%20passed-brightgreen.svg)](tests/)
+[![Geprüft: 2026-11-21](https://img.shields.io/badge/Geprüft-2026--11--21-brightgreen.svg)](#)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
@@ -10,9 +10,9 @@
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0%20required-brightgreen.svg)](#voraussetzungen)
 [![PGN & FEN: Unterstützt](https://img.shields.io/badge/export-PGN%20%7C%20FEN%20%7C%20JSON-blue.svg)](#spielstand-export)
 [![Zero Egress](https://img.shields.io/badge/privacy-zero%20egress-brightgreen.svg)](#datenschutz-sicherheit--zero-egress)
-[![Dokumentation: Zweisprachig](https://img.shields.io/badge/docs-EN%20%7C%20DE-blue.svg)](#)
+[![Dokumentation: Mehrsprachig](https://img.shields.io/badge/docs-EN%20%7C%20DE%20%7C%20ES-blue.svg)](#)
 
-[English](README.md) | [Deutsch](README_de.md)
+[English](README.md) | [Deutsch](README_de.md) | [Español](README_es.md)
 
 Terminal-Schach in Python für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Integration.
 
@@ -249,7 +249,8 @@ Während einer laufenden Partie können folgende Befehle direkt an der Eingabeau
 | `pgn` / `pgn [pfad]` | Exportiert die gesamte Partie als PGN-Turnierdokument | `pgn partie.pgn` |
 | `hint` / `tipp` | Berechnet taktischen Zugvorschlag auf der aktuellen Bot-Tiefe | `hint` |
 | `help` / `?` | Zeigt interaktive Hilfe und Steuerungsbefehle | `help` |
-| `quit` / `exit` | Beendet die Spielsitzung sicher | `quit` |
+| `lang [code]` / `sprache [code]` | Wechselt die Oberflächensprache zur Laufzeit (de, en, es, zh, ja, ru) | `sprache de` |
+| `quit` / `exit` / `beenden` | Beendet die Spielsitzung sicher | `quit` |
 
 ---
 

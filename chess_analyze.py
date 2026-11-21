@@ -31,6 +31,8 @@ from chess import (
     order_moves,
     update_castling_rights,
 )
+from i18n import set_language
+from i18n import t as _t
 
 COMM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chess_comm")
 REQUEST_FILE = os.path.join(COMM_DIR, "chess_request.json")
@@ -39,6 +41,25 @@ PIECE_NAMES = {
     "K": "König", "Q": "Dame", "R": "Turm",
     "B": "Läufer", "N": "Springer", "P": "Bauer",
 }
+
+PIECE_KEY_MAP = {
+    "K": "piece_king",
+    "Q": "piece_queen",
+    "R": "piece_rook",
+    "B": "piece_bishop",
+    "N": "piece_knight",
+    "P": "piece_pawn",
+}
+
+
+def get_piece_label(char):
+    if not char:
+        return "?"
+    code = char.upper()
+    key = PIECE_KEY_MAP.get(code)
+    if key:
+        return _t(key, default=PIECE_NAMES.get(code, char))
+    return PIECE_NAMES.get(code, char)
 
 # -----------------------------------------------------------------------
 # Hilfsfunktionen
@@ -216,20 +237,19 @@ def analyze_candidates(board, white, ep_target, castling_rights, depth=3, top_n=
 def print_candidates(results, board, white):
     """Print the candidate move list in a formatted layout."""
     sign = 1 if white else -1
-    print("  Rang  Zug    Eval   Figur  Schlägt")
+    print("  " + _t("analyzer_rank_header", default="Rang  Zug    Eval   Figur  Schlägt"))
     print("  " + "-" * 50)
     for i, (score, uci, fr, fc, tr, tc, captured, piece) in enumerate(results, 1):
         eval_str = "{:+.0f}".format(score * sign)
         cap_str = ""
         if captured != ".":
-            cap_str = "x{}({})".format(captured.upper(), PIECE_NAMES.get(captured.upper(), "?"))
-        pname = PIECE_NAMES.get(piece.upper(), "?")
+            cap_str = f"x{captured.upper()}({get_piece_label(captured)})"
+        pname = get_piece_label(piece)
         check_mark = ""
         new_board = make_move(board, fr, fc, tr, tc)
         if in_check(new_board, not white):
             check_mark = " +"
-        print("  [{:2d}]  {}{}   {:>6}  {:8}  {}".format(
-            i, uci, check_mark, eval_str, pname, cap_str))
+        print(f"  [{i:2d}]  {uci}{check_mark}   {eval_str:>6}  {pname:8}  {cap_str}")
     print()
 
 
@@ -239,6 +259,17 @@ def print_candidates(results, board, white):
 
 def main():
     args = sys.argv[1:]
+
+    # Check for --lang argument
+    if "--lang" in args:
+        l_idx = args.index("--lang")
+        if l_idx + 1 < len(args):
+            set_language(args[l_idx + 1])
+            args = args[:l_idx] + args[l_idx + 2:]
+    for a in list(args):
+        if a.startswith("--lang="):
+            set_language(a.split("=", 1)[1])
+            args.remove(a)
 
     depth = 3
     top_n = 6
@@ -281,7 +312,10 @@ def main():
 
     print()
     print("=" * 60)
-    print("  TAKTIK-ANALYZER  |  {} ist dran  |  Tiefe: {}".format(color_str, depth))
+    title_str = _t("analyzer_title", default="TAKTIK-ANALYZER")
+    turn_str = _t("analyzer_turn", color=color_str, default=f"{color_str} ist dran")
+    depth_str = _t("analyzer_depth", depth=depth, default=f"Tiefe: {depth}")
+    print(f"  {title_str}  |  {turn_str}  |  {depth_str}")
     print("=" * 60)
 
     # Zuggeschichte anzeigen
@@ -295,7 +329,7 @@ def main():
     print()
 
     # Brett der aktuellen Position zeichnen
-    print("  -- AKTUELLE POSITION --")
+    print("  " + _t("analyzer_current_pos", default="-- AKTUELLE POSITION --"))
     draw_board(board, last_move=move_history[-1] if move_history else None)
 
     # Materialstand
@@ -303,10 +337,10 @@ def main():
     wm, bm = material_balance(board)
     diff = ws - bs
     diff_str = "(+{} Weiß)".format(diff) if diff > 0 else ("({} Schwarz)".format(-diff) if diff < 0 else "(ausgeglichen)")
-    print("  Material:")
-    print("    Weiß: {} = {} Punkte".format(fmt_pieces(wm), ws))
-    print("    Schwarz: {} = {} Punkte".format(fmt_pieces(bm), bs))
-    print("    Bilanz: {}".format(diff_str))
+    print("  " + _t("analyzer_material", default="Material:"))
+    print("    " + _t("analyzer_material_white", pieces=fmt_pieces(wm), points=ws, default=f"Weiß: {fmt_pieces(wm)} = {ws} Punkte"))
+    print("    " + _t("analyzer_material_black", pieces=fmt_pieces(bm), points=bs, default=f"Schwarz: {fmt_pieces(bm)} = {bs} Punkte"))
+    print("    " + _t("analyzer_balance", balance=diff_str, default=f"Bilanz: {diff_str}"))
     print()
 
     # Schach?
@@ -351,17 +385,17 @@ def main():
             print()
 
     # Kandidaten-Züge bewerten
-    print("  -- TOP {} KANDIDATEN ({} ist dran, Tiefe {}) --".format(
-        top_n, "Weiß" if sim_white else "Schwarz", depth))
-    print("  Bitte warten...")
+    active_color_str = _t("color_white", default="Weiß") if sim_white else _t("color_black", default="Schwarz")
+    print("  " + _t("analyzer_top_candidates", top=top_n, color=active_color_str, depth=depth, default=f"-- TOP {top_n} KANDIDATEN ({active_color_str} ist dran, Tiefe {depth}) --"))
+    print("  " + _t("please_wait", default="Bitte warten..."))
     candidates = analyze_candidates(sim_board, sim_white, sim_ep, sim_cr, depth, top_n)
     if candidates:
         print_candidates(candidates, sim_board, sim_white)
         best = candidates[0]
-        print("  => Empfehlung: {} ({})".format(
-            best[1], PIECE_NAMES.get(best[7].upper(), "?")))
+        best_piece_label = get_piece_label(best[7])
+        print("  " + _t("analyzer_recommendation", move=best[1], eval=best_piece_label, default=f"=> Empfehlung: {best[1]} ({best_piece_label})"))
     else:
-        print("  Keine legalen Züge!")
+        print("  " + _t("analyzer_no_legal", default="Keine legalen Züge!"))
     print("=" * 60)
 
 

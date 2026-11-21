@@ -10,6 +10,16 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from i18n import (
+    get_language,
+    get_language_name,
+    get_supported_languages,
+    set_language,
+)
+from i18n import (
+    t as _t,
+)
+
 __version__ = "1.2.0"
 
 PIECES = {
@@ -107,6 +117,26 @@ PIECE_NAMES_DE = {
     "K": "König", "Q": "Dame", "R": "Turm",
     "B": "Läufer", "N": "Springer", "P": "Bauer",
 }
+
+PIECE_KEY_MAP = {
+    "K": "piece_king",
+    "Q": "piece_queen",
+    "R": "piece_rook",
+    "B": "piece_bishop",
+    "N": "piece_knight",
+    "P": "piece_pawn",
+}
+
+
+def get_localized_piece_name(piece_char):
+    """Return localized piece name or fallback to German/raw code."""
+    if not piece_char:
+        return ""
+    code = piece_char.upper()
+    key = PIECE_KEY_MAP.get(code)
+    if key:
+        return _t(key, default=PIECE_NAMES_DE.get(code, piece_char))
+    return piece_char
 
 PROMOTION_CHOICES = ("q", "r", "b", "n")
 
@@ -246,16 +276,17 @@ def display_hints(hints, white, show_recommendation):
         return
     sign = 1 if white else -1
     print()
-    print("  Tipp-Züge (Engine-Bewertung):")
+    print("  " + _t("hint_moves_header", default="Tipp-Züge (Engine-Bewertung):"))
     for i, (score, uci, piece, captured) in enumerate(hints, 1):
         eval_str = "{:+.0f}".format(score * sign)
-        pname = PIECE_NAMES_DE.get(piece.upper(), "?")
+        pname = get_localized_piece_name(piece)
         cap_str = ""
         if captured != ".":
-            cap_str = " x{}".format(PIECE_NAMES_DE.get(captured.upper(), captured))
-        print("  [{:2d}] {}   {:>6}   {}{}".format(i, uci, eval_str, pname, cap_str))
+            cap_str = f" x{get_localized_piece_name(captured)}"
+        print(f"  [{i:2d}] {uci}   {eval_str:>6}   {pname}{cap_str}")
     if show_recommendation and hints:
-        print("  => Empfehlung: {}".format(hints[0][1]))
+        rec_text = _t("hint_recommendation", move=hints[0][1], default=f"=> Empfehlung: {hints[0][1]}")
+        print(f"  {rec_text}")
     print()
 
 
@@ -377,16 +408,18 @@ def expand_legal_moves(board, legal_moves):
 
 def prompt_for_promotion_choice(prompt_fn=input):
     """Ask the user which piece to promote to."""
+    prompt_msg = _t("promotion_prompt", default="  Bauernumwandlung (q/r/b/n, Enter=q): ")
+    err_msg = _t("promotion_error", default="Bitte q, r, b oder n eingeben.")
     while True:
         try:
-            choice = prompt_fn("  Bauernumwandlung (q/r/b/n, Enter=q): ").strip().lower()
+            choice = prompt_fn(prompt_msg).strip().lower()
         except (EOFError, KeyboardInterrupt):
             return None
         if not choice:
             return "q"
         if choice in PROMOTION_CHOICES:
             return choice
-        print("  Bitte q, r, b oder n eingeben.")
+        print(f"  {err_msg}")
 
 
 def resolve_player_move(board, move_text, legal_moves, prompt_fn=input):
@@ -1060,18 +1093,19 @@ def run_healthcheck():
 
 def print_cli_help():
     """Print command line usage information."""
-    print(f"ChatAndChess v{__version__} - Terminal Chess in Python")
+    print(f"ChatAndChess v{__version__} - {_t('app_subtitle', version=__version__, default='Terminal Chess in Python')}")
     print()
-    print("Verwendung:")
-    print("  python chess.py                     Startet das interaktive Spiel")
-    print("  python chess.py --version           Zeigt die Version an")
-    print("  python chess.py --healthcheck       Führt automatische Engine-Selbsttests aus")
-    print("  python chess.py --export-initial <p> Schreibt Startposition als chatandchess-game-v1.json")
-    print("  python chess.py --export-pgn <p> [m] Replay von UCI-Zügen und Export nach PGN")
-    print("  python chess.py --fen [m...]        Gibt FEN nach Zugfolge auf stdout aus")
-    print("  python chess.py --worker            Startet den Claude-Code Hintergrund-Worker")
-    print("  python chess.py --prompt            Generiert den Claude-Code System-Prompt")
-    print("  python chess.py --help              Zeigt diese Hilfe an")
+    print(_t("cli_help_title", default="Verwendung:"))
+    print(f"  python chess.py                     {_t('cli_help_run', default='Startet das interaktive Spiel')}")
+    print(f"  python chess.py --version           {_t('cli_help_version', default='Zeigt die Version an')}")
+    print(f"  python chess.py --healthcheck       {_t('cli_help_healthcheck', default='Führt automatische Engine-Selbsttests aus')}")
+    print(f"  python chess.py --export-initial <p> {_t('cli_help_export_initial', default='Schreibt Startposition als chatandchess-game-v1.json')}")
+    print(f"  python chess.py --export-pgn <p> [m] {_t('cli_help_export_pgn', default='Replay von UCI-Zügen und Export nach PGN')}")
+    print(f"  python chess.py --fen [m...]        {_t('cli_help_fen', default='Gibt FEN nach Zugfolge auf stdout aus')}")
+    print(f"  python chess.py --lang <code>       {_t('cli_help_lang', default='Legt die Anzeigesprache fest (de, en, es, zh, ja, ru)')}")
+    print(f"  python chess.py --worker            {_t('cli_help_worker', default='Startet den Claude-Code Hintergrund-Worker')}")
+    print(f"  python chess.py --prompt            {_t('cli_help_prompt', default='Generiert den Claude-Code System-Prompt')}")
+    print(f"  python chess.py --help              {_t('cli_help_help', default='Zeigt diese Hilfe an')}")
 
 
 # ---------------------------------------------------------------------------
@@ -1628,39 +1662,39 @@ def show_menu():
     os.system("cls" if sys.platform == "win32" else "clear")
     print()
     print("  ================================================")
-    print("       ASCII SCHACH")
+    print(f"       {_t('menu_title', default='ASCII SCHACH')}")
     print("  ================================================")
     print()
-    print("    [1]  2 Spieler (lokal)")
-    print("    [2]  Spieler vs Bot (Minimax)")
-    print("    [3]  Spieler vs Claude (API)")
-    print("    [4]  Spieler vs Claude Code (Datei-Link)")
-    print("    [q]  Beenden")
+    print(f"    [1]  {_t('menu_mode_2player', default='2 Spieler (lokal)')}")
+    print(f"    [2]  {_t('menu_mode_bot', default='Spieler vs Bot (Minimax)')}")
+    print(f"    [3]  {_t('menu_mode_claude_api', default='Spieler vs Claude (API)')}")
+    print(f"    [4]  {_t('menu_mode_claude_code', default='Spieler vs Claude Code (Datei-Link)')}")
+    print(f"    [q]  {_t('menu_quit', default='Beenden')}")
     print()
-    choice = input("  Auswahl: ").strip().lower()
+    choice = input(f"  {_t('menu_choice_prompt', default='Auswahl: ')}").strip().lower()
     return choice
 
 
 def choose_color():
     print()
-    print("  Welche Farbe möchtest du spielen?")
-    print("    [w]  Weiß")
-    print("    [s]  Schwarz")
+    print(f"  {_t('color_select_prompt', default='Welche Farbe möchtest du spielen?')}")
+    print(f"    [w]  {_t('color_white', default='Weiß')}")
+    print(f"    [s]  {_t('color_black', default='Schwarz')}")
     print()
-    c = input("  Auswahl: ").strip().lower()
-    if c in ("s", "schwarz", "b", "black"):
+    c = input(f"  {_t('color_choice_prompt', default='Auswahl: ')}").strip().lower()
+    if c in ("s", "schwarz", "b", "black", "negro", "negras", "черный", "чёрный", "черные", "чёрные", "黒", "黑"):
         return False
     return True
 
 
 def choose_difficulty():
     print()
-    print("  Bot-Staerke (Suchtiefe):")
-    print("    [1]  Leicht (Tiefe 2)")
-    print("    [2]  Mittel (Tiefe 3)")
-    print("    [3]  Schwer (Tiefe 4)")
+    print(f"  {_t('diff_select_prompt', default='Bot-Stärke (Suchtiefe):')}")
+    print(f"    [1]  {_t('diff_easy', default='Leicht (Tiefe 2)')}")
+    print(f"    [2]  {_t('diff_medium', default='Mittel (Tiefe 3)')}")
+    print(f"    [3]  {_t('diff_hard', default='Schwer (Tiefe 4)')}")
     print()
-    c = input("  Auswahl [1-3]: ").strip()
+    c = input(f"  {_t('diff_choice_prompt', default='Auswahl [1-3]: ')}").strip()
     if c == "1":
         return 2
     elif c == "3":
@@ -1722,22 +1756,40 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
         settings = load_settings()
         if is_human and settings.get("show_hints"):
-            print("  Berechne Tipps...")
+            print("  " + _t("calculating_hints", default="Berechne Tipps..."))
             hints = compute_hints(board, white_turn, en_passant_target, castling_rights,
                                   settings.get("hint_depth", 2), settings.get("top_n", 5))
             display_hints(hints, white_turn, settings.get("show_recommendation", False))
 
         if is_human:
             try:
-                inp = input("  Zug (z.B. e2e4, e7e8q, q=quit, fen, export, pgn, help): ").strip()
+                prompt_text = _t("prompt_move", default="Zug (z.B. e2e4, e7e8q, q=quit, fen, export, pgn, help): ")
+                inp = input(f"  {prompt_text}").strip()
             except (EOFError, KeyboardInterrupt):
-                print("\n  Spiel beendet.")
+                print(f"\n  {_t('game_over', default='Spiel beendet.')}")
                 return
 
             inp_clean = inp.lower()
-            if inp_clean in ("q", "quit", "exit"):
-                print("  Spiel beendet.")
+            if inp_clean in ("q", "quit", "exit", "beenden", "salir", "выйти", "выход"):
+                print(f"  {_t('game_over', default='Spiel beendet.')}")
                 return
+
+            if inp_clean == "lang" or inp_clean.startswith("lang ") or inp_clean == "sprache" or inp_clean.startswith("sprache "):
+                parts = inp.split(maxsplit=1)
+                if len(parts) == 1:
+                    print(f"\n  {_t('lang_current', name=get_language_name(), code=get_language(), default=f'Aktuelle Sprache: {get_language_name()} ({get_language()})')}")
+                    print("  Available: " + ", ".join(get_supported_languages()) + "\n")
+                else:
+                    new_code = parts[1].strip()
+                    if set_language(new_code):
+                        print(f"\n  {_t('lang_changed', name=get_language_name(), code=get_language(), default=f'Sprache geändert auf: {get_language_name()} ({get_language()})')}\n")
+                    else:
+                        print(f"\n  {_t('lang_invalid', code=new_code, available=', '.join(get_supported_languages()), default=f'Ungültige Sprache {new_code}')}\n")
+                try:
+                    input(f"  {_t('press_enter_continue', default='[Enter zum Weiterspielen]')}")
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                continue
 
             if inp_clean == "fen":
                 current_fen = board_to_fen(board, white_turn, castling_rights, en_passant_target)
@@ -1783,21 +1835,22 @@ def game_loop(mode, player_white=True, bot_depth=3):
                     pass
                 continue
 
-            if inp_clean in ("help", "?", "hilfe"):
-                print("\n  Verfügbare Befehle:")
-                print("    e2e4, e7e8q : Normaler Zug bzw. Bauernumwandlung")
-                print("    fen         : Zeigt die aktuelle FEN-Notation")
-                print("    export [pfad]: Exportiert die Partie als chatandchess-game-v1.json")
-                print("    pgn [pfad]  : Exportiert die Züge im PGN-Format")
-                print("    tipp / hint : Berechnet und zeigt Taktik-Tipps")
-                print("    q / quit    : Beendet das aktuelle Spiel\n")
+            if inp_clean in ("help", "?", "hilfe", "ayuda", "aide", "帮助", "ヘルプ", "помощь"):
+                print(f"\n  {_t('help_commands_title', default='Verfügbare Befehle:')}")
+                print(f"    e2e4, e7e8q : {_t('help_cmd_move', default='Normaler Zug bzw. Bauernumwandlung')}")
+                print(f"    fen         : {_t('help_cmd_fen', default='Zeigt die aktuelle FEN-Notation')}")
+                print(f"    export [pfad]: {_t('help_cmd_export', default='Exportiert die Partie als chatandchess-game-v1.json')}")
+                print(f"    pgn [pfad]  : {_t('help_cmd_pgn', default='Exportiert die Züge im PGN-Format')}")
+                print(f"    tipp / hint : {_t('help_cmd_hint', default='Berechnet und zeigt Taktik-Tipps')}")
+                print(f"    lang [code] : {_t('help_cmd_lang', default='Zeigt oder ändert die Sprache')}")
+                print(f"    q / quit    : {_t('help_cmd_quit', default='Beendet das aktuelle Spiel')}\n")
                 try:
-                    input("  [Enter zum Weiterspielen]")
+                    input(f"  {_t('press_enter_continue', default='[Enter zum Weiterspielen]')}")
                 except (EOFError, KeyboardInterrupt):
                     pass
                 continue
 
-            if inp_clean in ("hint", "tipp", "tipps", "hints"):
+            if inp_clean in ("hint", "tipp", "tipps", "hints", "consejo", "提示", "ヒント", "подсказка"):
                 hints = compute_hints(board, white_turn, en_passant_target, castling_rights, 2, 5)
                 display_hints(hints, white_turn, True)
                 try:
@@ -1869,9 +1922,28 @@ def game_loop(mode, player_white=True, bot_depth=3):
 
 
 def main():
+    # Check for --lang argument in argv and apply language selection
+    lang_val = None
+    filtered_argv = [sys.argv[0]]
+    idx = 1
+    while idx < len(sys.argv):
+        a = sys.argv[idx]
+        if a.startswith("--lang="):
+            lang_val = a.split("=", 1)[1]
+            idx += 1
+        elif a == "--lang" and idx + 1 < len(sys.argv):
+            lang_val = sys.argv[idx + 1]
+            idx += 2
+        else:
+            filtered_argv.append(a)
+            idx += 1
+
+    if lang_val:
+        set_language(lang_val)
+
     # CLI-Argumente prüfen
-    if len(sys.argv) > 1:
-        arg = sys.argv[1].lower()
+    if len(filtered_argv) > 1:
+        arg = filtered_argv[1].lower()
         if arg in ("--version", "-v"):
             print(f"ChatAndChess {__version__}")
             return
@@ -1882,21 +1954,21 @@ def main():
             print_cli_help()
             return
         if arg == "--export-initial":
-            if len(sys.argv) < 3:
+            if len(filtered_argv) < 3:
                 print("FEHLER: Pfad für den Initial-Export fehlt. Verwendung: --export-initial <datei.json>", file=sys.stderr)
                 sys.exit(2)
-            export_initial_game(sys.argv[2])
+            export_initial_game(filtered_argv[2])
             return
         if arg == "--export-pgn":
-            if len(sys.argv) < 3:
+            if len(filtered_argv) < 3:
                 print("FEHLER: Ausgabepfad fehlt. Verwendung: --export-pgn <datei.pgn> [zug1 zug2 ...]", file=sys.stderr)
                 sys.exit(2)
-            out_path = sys.argv[2]
-            moves = sys.argv[3:]
+            out_path = filtered_argv[2]
+            moves = filtered_argv[3:]
             export_pgn_cli(out_path, moves)
             return
         if arg == "--fen":
-            moves = sys.argv[2:]
+            moves = filtered_argv[2:]
             export_fen_cli(moves)
             return
         if arg == "--worker":

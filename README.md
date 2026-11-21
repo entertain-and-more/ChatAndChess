@@ -1,8 +1,8 @@
 # ChatAndChess
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 55 passed](https://img.shields.io/badge/tests-55%20passed-brightgreen.svg)](tests/)
-[![Verified: 2026-11-04](https://img.shields.io/badge/Verified-2026--11--04-brightgreen.svg)](#)
+[![Tests: 71 passed](https://img.shields.io/badge/tests-71%20passed-brightgreen.svg)](tests/)
+[![Verified: 2026-11-21](https://img.shields.io/badge/Verified-2026--11--21-brightgreen.svg)](#)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
@@ -10,9 +10,9 @@
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0%20required-brightgreen.svg)](#requirements)
 [![PGN & FEN: Supported](https://img.shields.io/badge/export-PGN%20%7C%20FEN%20%7C%20JSON-blue.svg)](#game-state-export)
 [![Zero Egress](https://img.shields.io/badge/privacy-zero%20egress-brightgreen.svg)](#privacy-security--zero-egress)
-[![Documentation: Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20DE-blue.svg)](#)
+[![Documentation: Multilingual](https://img.shields.io/badge/docs-EN%20%7C%20DE%20%7C%20ES-blue.svg)](#)
 
-[English](README.md) | [Deutsch](README_de.md)
+[English](README.md) | [Deutsch](README_de.md) | [Español](README_es.md)
 
 Terminal chess for local games, a built-in Minimax bot, Claude API mode, and Claude Code worker integration.<br>
 Terminal-Schach für lokale Partien, Minimax-Bot, Claude API und Claude-Code-Integration.
@@ -250,6 +250,7 @@ During any interactive game, enter these commands directly at the prompt:
 | `pgn` / `pgn [path]` | Export full move history to standardized PGN file | `pgn match.pgn` |
 | `hint` / `tipp` | Calculate tactical recommendation at active bot depth | `hint` |
 | `help` / `?` | Display available game controls and commands | `help` |
+| `lang [code]` / `sprache [code]` | Switch the UI language at runtime (de, en, es, zh, ja, ru) | `lang es` |
 | `quit` / `exit` | Exit the current game session safely | `quit` |
 
 ---
