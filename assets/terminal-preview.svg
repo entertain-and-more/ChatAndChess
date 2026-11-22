@@ -52,21 +52,21 @@
     <!-- Chess Board ASCII / Unicode Grid -->
     <text y="46" class="board-edge">    a   b   c   d   e   f   g   h</text>
     <text y="62" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
-    <text y="78" class="board-edge">8 | <tspan class="black-piece">r</tspan> | <tspan class="black-piece">n</tspan> | <tspan class="black-piece">b</tspan> | <tspan class="black-piece">q</tspan> | <tspan class="black-piece">k</tspan> | <tspan class="black-piece">b</tspan> | <tspan class="black-piece">n</tspan> | <tspan class="black-piece">r</tspan> | 8</text>
+    <text y="78" class="board-edge">8 | <tspan class="black-piece">r</tspan> | . | <tspan class="black-piece">b</tspan> | <tspan class="black-piece">q</tspan> | <tspan class="black-piece">k</tspan> | <tspan class="black-piece">b</tspan> | <tspan class="black-piece">n</tspan> | <tspan class="black-piece">r</tspan> | 8</text>
     <text y="94" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
     <text y="110" class="board-edge">7 | <tspan class="black-piece">p</tspan> | <tspan class="black-piece">p</tspan> | <tspan class="black-piece">p</tspan> | <tspan class="black-piece">p</tspan> | . | <tspan class="black-piece">p</tspan> | <tspan class="black-piece">p</tspan> | <tspan class="black-piece">p</tspan> | 7</text>
     <text y="126" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
-    <text y="142" class="board-edge">6 | . | . | . | . | . | . | . | . | 6</text>
+    <text y="142" class="board-edge">6 | . | . | <tspan class="black-piece">n</tspan> | . | . | . | . | . | 6   <tspan class="muted">[2... b8c6]</tspan></text>
     <text y="158" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
     <text y="174" class="board-edge">5 | . | . | . | . | <tspan class="black-piece highlight">p</tspan> | . | . | . | 5   <tspan class="muted">[1... e7e5]</tspan></text>
     <text y="190" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
-    <text y="206" class="board-edge">4 | . | . | . | . | <tspan class="white-piece highlight">P</tspan> | . | . | . | 4   <tspan class="muted">[1.  e2e4]</tspan></text>
+    <text y="206" class="board-edge">4 | . | . | <tspan class="white-piece highlight">B</tspan> | . | <tspan class="white-piece">P</tspan> | . | . | . | 4   <tspan class="muted">[3.  f1c4]</tspan></text>
     <text y="222" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
     <text y="238" class="board-edge">3 | . | . | . | . | . | <tspan class="white-piece highlight">N</tspan> | . | . | 3   <tspan class="muted">[2.  g1f3]</tspan></text>
     <text y="254" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
     <text y="270" class="board-edge">2 | <tspan class="white-piece">P</tspan> | <tspan class="white-piece">P</tspan> | <tspan class="white-piece">P</tspan> | <tspan class="white-piece">P</tspan> | . | <tspan class="white-piece">P</tspan> | <tspan class="white-piece">P</tspan> | <tspan class="white-piece">P</tspan> | 2</text>
     <text y="286" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
-    <text y="302" class="board-edge">1 | <tspan class="white-piece">R</tspan> | <tspan class="white-piece">N</tspan> | <tspan class="white-piece">B</tspan> | <tspan class="white-piece">Q</tspan> | <tspan class="white-piece">K</tspan> | <tspan class="white-piece">B</tspan> | . | <tspan class="white-piece">R</tspan> | 1</text>
+    <text y="302" class="board-edge">1 | <tspan class="white-piece">R</tspan> | <tspan class="white-piece">N</tspan> | <tspan class="white-piece">B</tspan> | <tspan class="white-piece">Q</tspan> | <tspan class="white-piece">K</tspan> | . | . | <tspan class="white-piece">R</tspan> | 1</text>
     <text y="318" class="board-edge">  +---+---+---+---+---+---+---+---+</text>
     <text y="334" class="board-edge">    a   b   c   d   e   f   g   h</text>
     <text y="356" class="muted">White: K Q R B N P  |  Black: k q r b n p</text>
@@ -87,7 +87,7 @@
     <text x="14" y="148" class="cyan">  Top move: <tspan class="white-piece">f8c5 (Bc5)</tspan> eval: -0.35 [Giuoco Piano]</text>
     <text x="14" y="166" class="cyan">  Alt move: <tspan class="white-piece">g8f6 (Nf6)</tspan> eval: -0.40 [Two Knights]</text>
     <text x="14" y="192" class="prompt">ChatAndChess &gt; <tspan class="white-piece">fen</tspan></text>
-    <text x="14" y="210" class="green">  r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4</text>
+    <text x="14" y="210" class="green">  r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3</text>
     <text x="14" y="232" class="prompt">ChatAndChess &gt; <tspan class="white-piece">pgn tournament_match.pgn</tspan></text>
 
     <!-- Capabilities Badges Footer -->
@@ -96,6 +96,6 @@
     <text x="14" y="300" class="muted">• Zero Egress Guarantee: <tspan class="green">100% Local-First Engine</tspan></text>
     <text x="14" y="320" class="muted">• AI Agent Subprocess IPC: <tspan class="cyan">chess_comm/*.json</tspan></text>
     <text x="14" y="340" class="muted">• Headless CLI Replay: <tspan class="accent">--fen, --export-pgn, --healthcheck</tspan></text>
-    <text x="14" y="358" class="muted">• Test Verification: <tspan class="green">52+ Unit &amp; Contract Tests Passed</tspan></text>
+    <text x="14" y="358" class="muted">• Test Verification: <tspan class="green">Unit &amp; Contract Tests Passed</tspan></text>
   </g>
 </svg>
