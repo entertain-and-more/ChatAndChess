@@ -1,8 +1,8 @@
 # ChatAndChess (Español)
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 52 passed](https://img.shields.io/badge/tests-52%20passed-brightgreen.svg)](tests/)
-[![Verified: 2026-11-05](https://img.shields.io/badge/Verified-2026--11--05-brightgreen.svg)](#)
+[![Tests: 70 passed](https://img.shields.io/badge/tests-70%20passed-brightgreen.svg)](tests/)
+[![Verified: 2026-11-13](https://img.shields.io/badge/Verified-2026--11--13-brightgreen.svg)](#)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
@@ -51,6 +51,10 @@ Terminal chess for local games, built-in Minimax bot, Claude API, and Claude Cod
 ---
 
 ## Capturas de Pantalla y Vista Previa
+
+![Vista previa de terminal de ChatAndChess](assets/terminal-preview.svg)
+
+<br>
 
 ![Captura de pantalla de ChatAndChess](README/screenshots/gameplay.jpg)
 
@@ -207,6 +211,27 @@ python chess.py --worker
 python chess.py --lang es
 ```
 
+### Interfaz CLI sin Interacción y Automatización
+
+ChatAndChess ofrece opciones de línea de comandos no interactivas, entre ellas `--healthcheck`, `--fen`, `--export-pgn` y `--version`, para pruebas automatizadas, pipelines de CI y scripts:
+
+```bash
+# Comprobación no interactiva del motor (valida tablero, jugadas, FEN y SAN)
+python chess.py --healthcheck
+
+# Reproducir jugadas y mostrar la cadena FEN resultante
+python chess.py --fen e2e4 e7e5 g1f3 b8c6
+
+# Reproducir jugadas y exportar el documento PGN completo
+python chess.py --export-pgn game.pgn e2e4 e7e5 g1f3 b8c6 f1c4
+
+# Exportar el estado inicial de la partida a JSON
+python chess.py --export-initial initial_board.json
+
+# Mostrar la versión del motor
+python chess.py --version
+```
+
 ---
 
 ## Cómo Jugar
@@ -217,6 +242,20 @@ Las jugadas utilizan la notación estándar UCI: `e2e4` (casilla de origen a cas
 - Enroque: `e1g1` (corto) o `e1c1` (largo)
 - Coronación de peón: Se solicita automáticamente al alcanzar la octava (o primera) fila, ej. `e7e8q`
 - Comandos en la partida: `help` (ayuda), `hint` (consejo), `fen` (notación FEN), `pgn` (exportar PGN), `lang` (cambiar idioma), `quit` (salir)
+
+### Comandos de Consola en la Partida
+
+Durante cualquier partida interactiva, introduce estos comandos directamente en el indicador:
+
+| Comando | Acción | Ejemplo |
+|---|---|---|
+| `fen` | Muestra el tablero actual en notación FEN | `fen` |
+| `export` / `export [ruta]` | Exporta el estado actual de la partida a JSON con notación SAN | `export my_game.json` |
+| `pgn` / `pgn [ruta]` | Exporta el historial completo de jugadas a un archivo PGN estándar | `pgn match.pgn` |
+| `hint` / `consejo` | Calcula una recomendación táctica con la profundidad activa del bot | `hint` |
+| `help` / `ayuda` / `?` | Muestra los controles y comandos disponibles | `help` |
+| `lang [código]` | Cambia el idioma durante la partida | `lang es` |
+| `quit` / `salir` | Sale de la partida actual de forma segura | `quit` |
 
 ---
 

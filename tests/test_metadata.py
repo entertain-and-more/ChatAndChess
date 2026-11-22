@@ -121,6 +121,7 @@ class TestChatAndChessMetadata(unittest.TestCase):
         self.assertTrue(
             llms.startswith("## Last-checked: 2026-10-31")
             or llms.startswith("## Last-checked: 2026-11-03")
+            or llms.startswith("## Last-checked: 2026-11-04")
             or llms.startswith("## Last-checked: 2026-11-05")
         )
         self.assertIn("tests/test_metadata.py", llms)
@@ -160,6 +161,33 @@ class TestChatAndChessMetadata(unittest.TestCase):
             p = PROJECT_ROOT / name
             self.assertTrue(p.is_file(), f"Asset missing: {name}")
             self.assertGreater(p.stat().st_size, 100, f"Asset too small: {name}")
+
+    def test_terminal_preview_svg_asset(self):
+        """Verify terminal preview SVG vector asset exists and is valid."""
+        svg_path = PROJECT_ROOT / "assets" / "terminal-preview.svg"
+        self.assertTrue(svg_path.is_file(), "assets/terminal-preview.svg missing")
+        svg_content = svg_path.read_text(encoding="utf-8")
+        self.assertGreater(len(svg_content), 500, "assets/terminal-preview.svg too small")
+        self.assertIn("<svg", svg_content)
+        self.assertIn("ChatAndChess", svg_content)
+        self.assertIn("Minimax", svg_content)
+
+    def test_pyproject_keywords_discoverability(self):
+        """Verify pyproject.toml contains rich discoverability and SEO keywords."""
+        content = (PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        for kw in ("uci-chess", "tactics-analyzer", "zero-egress", "local-first", "pgn-export", "fen"):
+            self.assertIn(f'"{kw}"', content, f"Missing discoverability keyword: {kw}")
+
+    def test_in_game_commands_and_cli_documented(self):
+        """Verify in-game console commands and headless CLI flags are documented in all READMEs."""
+        for name in ("README.md", "README_de.md", "README_es.md"):
+            text = (PROJECT_ROOT / name).read_text(encoding="utf-8")
+            for cmd in ("`fen`", "`export`", "`pgn`", "`hint`", "`lang"):
+                self.assertIn(cmd, text, f"Missing command {cmd} in {name}")
+            for flag in ("--healthcheck", "--fen", "--export-pgn"):
+                self.assertIn(flag, text, f"Missing CLI flag {flag} in {name}")
+            self.assertIn("assets/terminal-preview.svg", text, f"Missing terminal preview in {name}")
+
 
 
 if __name__ == "__main__":

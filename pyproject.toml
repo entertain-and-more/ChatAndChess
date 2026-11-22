@@ -23,7 +23,13 @@ keywords = [
     "ai-chess",
     "python-chess",
     "pyside6",
-    "offline-first"
+    "offline-first",
+    "uci-chess",
+    "tactics-analyzer",
+    "zero-egress",
+    "local-first",
+    "pgn-export",
+    "fen"
 ]
 classifiers = [
     "Development Status :: 4 - Beta",

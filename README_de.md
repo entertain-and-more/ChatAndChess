@@ -1,13 +1,15 @@
 # ChatAndChess (Deutsch)
 
 [![ChatAndChess tests](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml/badge.svg)](https://github.com/entertain-and-more/ChatAndChess/actions/workflows/tests.yml)
-[![Tests: 52 passed](https://img.shields.io/badge/tests-52%20passed-brightgreen.svg)](tests/)
-[![Geprüft: 2026-11-03](https://img.shields.io/badge/Geprüft-2026--11--03-brightgreen.svg)](#)
+[![Tests: 70 passed](https://img.shields.io/badge/tests-70%20passed-brightgreen.svg)](tests/)
+[![Geprüft: 2026-11-13](https://img.shields.io/badge/Geprüft-2026--11--13-brightgreen.svg)](#)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![LLM Ready](https://img.shields.io/badge/LLM-Ready-success.svg)](llms.txt)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0%20required-brightgreen.svg)](#voraussetzungen)
+[![PGN & FEN: Unterstützt](https://img.shields.io/badge/export-PGN%20%7C%20FEN%20%7C%20JSON-blue.svg)](#spielstand-export)
+[![Zero Egress](https://img.shields.io/badge/privacy-zero%20egress-brightgreen.svg)](#datenschutz-sicherheit--zero-egress)
 [![Dokumentation: Mehrsprachig](https://img.shields.io/badge/docs-EN%20%7C%20DE%20%7C%20ES-blue.svg)](#)
 
 [English](README.md) | [Deutsch](README_de.md) | [Español](README_es.md)
@@ -50,6 +52,10 @@ Terminal-Schach in Python für lokale Partien, Minimax-Bot, Claude API und Claud
 ---
 
 ## Screenshots & Terminal-Vorschau
+
+![ChatAndChess Terminal Preview](assets/terminal-preview.svg)
+
+<br>
 
 ![ChatAndChess Gameplay](README/screenshots/gameplay.jpg)
 
@@ -201,6 +207,27 @@ dist\ChatAndChess.exe --healthcheck
 python chess.py --worker
 ```
 
+### Headless-CLI & Skript-Schnittstelle
+
+ChatAndChess bietet nicht-interaktive CLI-Parameter für automatisiertes Testen, CI-Pipelines und Skripte:
+
+```bash
+# Engine-Selbsttest & Healthcheck (validiert Brett, Züge, FEN, SAN)
+python chess.py --healthcheck
+
+# Züge nachspielen und resultierende FEN-Zeichenkette ausgeben
+python chess.py --fen e2e4 e7e5 g1f3 b8c6
+
+# Züge nachspielen und PGN-Turnierdokument exportieren
+python chess.py --export-pgn partie.pgn e2e4 e7e5 g1f3 b8c6 f1c4
+
+# Ausgangsstellung als JSON exportieren
+python chess.py --export-initial initial_board.json
+
+# Versionsinformationen anzeigen
+python chess.py --version
+```
+
 ---
 
 ## Spielweise
@@ -210,6 +237,20 @@ Züge werden in standardisierter UCI-Notation eingegeben: `e2e4` (Startfeld zu Z
 - Normale Züge: `e2e4`, `g1f3`
 - Rochade: `e1g1` (kurz) oder `e1c1` (lang)
 - Bauernumwandlung: Beim Erreichen der 8. (bzw. 1.) Reihe fragt das Programm nach der gewünschten Figur, z. B. `e7e8q`
+
+### Konsolen-Befehle im Spiel
+
+Während einer laufenden Partie können folgende Befehle direkt an der Eingabeaufforderung eingegeben werden:
+
+| Befehl | Aktion | Beispiel |
+|---|---|---|
+| `fen` | Gibt die aktuelle Stellung in FEN-Notation aus | `fen` |
+| `export` / `export [pfad]` | Exportiert den aktuellen Spielstand als JSON mit SAN-Notation | `export partie.json` |
+| `pgn` / `pgn [pfad]` | Exportiert die gesamte Partie als PGN-Turnierdokument | `pgn partie.pgn` |
+| `hint` / `tipp` | Berechnet taktischen Zugvorschlag auf der aktuellen Bot-Tiefe | `hint` |
+| `help` / `?` | Zeigt interaktive Hilfe und Steuerungsbefehle | `help` |
+| `lang [code]` / `sprache [code]` | Zeigt oder wechselt die Anzeigesprache während der Partie | `lang de` |
+| `quit` / `exit` | Beendet die Spielsitzung sicher | `quit` |
 
 ---
 
